@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Form
 
-router = APIRouter()
+
+from typing import Annotated
+
+router = APIRouter(prefix="/api")
 
 # @router.get("/")
 # async def api_root():
@@ -20,9 +23,9 @@ async def create_incident():
 
 @router.post("/reg")
 async def register_user(
-    email: str = Form(...),
-    password: str = Form(...),
-    confirm_password: str = Form(...)
+    email: Annotated[str, Form()], 
+    password: Annotated[str, Form()],
+    confirm_password: Annotated[str, Form()], 
 ):
     """Register a new user"""
     print("Hiiii")

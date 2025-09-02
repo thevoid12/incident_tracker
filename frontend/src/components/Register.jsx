@@ -22,7 +22,7 @@ function Register() {
             </h2>
           </div>
 
-          <form action="/reg" method="POST">
+          <form action="/api/reg" method="POST">
             <div className="mb-4">
               <label htmlFor="email" className="sr-only">Email</label>
               <input
@@ -48,10 +48,10 @@ function Register() {
             </div>
 
             <div className="mb-6">
-              <label htmlFor="confirmPassword" className="sr-only">Confirm Password</label>
+              <label htmlFor="confirm_password" className="sr-only">Confirm Password</label>
               <input
                 type="password"
-                id="confirmPassword"
+                id="confirm_password"
                 name="confirm_password"
                 placeholder="confirm your password"
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
