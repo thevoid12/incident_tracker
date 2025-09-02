@@ -3,3 +3,4 @@
   - [x] decorators
   - [x] pydantic
 - [ ]  jwt is stolen
+- [ ]  cors setup
