@@ -1,11 +1,7 @@
 import { Link } from 'react-router-dom';
 import Footer from './Footer';
 function Register() {
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: Handle register logic
-    console.log('Register submitted');
-  };
+  // Form will submit directly to /reg endpoint
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -26,7 +22,7 @@ function Register() {
             </h2>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form action="/reg" method="POST">
             <div className="mb-4">
               <label htmlFor="email" className="sr-only">Email</label>
               <input
@@ -56,7 +52,7 @@ function Register() {
               <input
                 type="password"
                 id="confirmPassword"
-                name="confirmPassword"
+                name="confirm_password"
                 placeholder="confirm your password"
                 className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
