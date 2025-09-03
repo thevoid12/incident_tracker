@@ -58,7 +58,7 @@ async def get_incident(
             raise HTTPException(status_code=404, detail=str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.put("/incidents/{id}", response_model=IncidentResponse)
+@router.put("/incidents/{id}")
 async def update_incident(
     id: str,
     request: UpdateIncidentRequest = Depends(UpdateIncidentRequest.as_form),
@@ -68,7 +68,10 @@ async def update_incident(
     """Update an existing incident"""
     service = IncidentService(db)
     try:
-        return await service.update_incident(id, request, current_user["email"])
+        await service.update_incident(id, request, current_user["email"])
+        # Create HTML redirect response with 303 See Other
+        response = RedirectResponse(url="/home", status_code=303)
+        return response
     except Exception as e:
         if "not found" in str(e).lower():
             raise HTTPException(status_code=404, detail=str(e))

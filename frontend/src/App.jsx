@@ -13,6 +13,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/new" element={<CreateIncident />} />
+        <Route path="/edit" element={<CreateIncident />} />
       </Routes>
     </Router>
   );

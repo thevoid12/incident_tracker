@@ -11,6 +11,35 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
     });
   };
 
+  // Handle delete incident
+  const handleDelete = async (incidentId) => {
+    if (window.confirm('Are you sure you want to delete this incident?')) {
+      try {
+        const response = await fetch(`/api/incidents/${incidentId}`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          alert('Incident deleted successfully');
+          // Refresh the page to update the table
+          // soReact unmounts all components
+          // HomePage component mounts again
+          // useEffect in HomePage triggers
+          window.location.reload();
+        } else {
+          alert('Failed to delete incident');
+        }
+      } catch (error) {
+        console.error('Error deleting incident:', error);
+        alert('Error deleting incident');
+      }
+    }
+  };
+
   // Show empty state
   if (!incidents || incidents.length === 0) {
     return (
@@ -38,8 +67,11 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
               <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-32">
                 Created Date
               </th>
-              <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal">
-                Assigned To
+               <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-24">
+                Created By
+              </th>
+              <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-24">
+                Actions
               </th>
             </tr>
           </thead>
@@ -71,6 +103,28 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
                   </td>
                   <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
                     {incident.created_by}
+                  </td>
+                  <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => window.location.href = `/edit?id=${incident.id}`}
+                        className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#f0f2f4] hover:bg-[#e5e7eb] transition-colors"
+                        title="Edit incident"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+                          <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.32,64l24-24L216,84.68Z"></path>
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDelete(incident.id)}
+                        className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#fee2e2] hover:bg-[#fecaca] transition-colors text-[#dc2626]"
+                        title="Delete incident"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+                          <path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path>
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -107,6 +161,29 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
               <p className="text-[#617589] text-sm">
                 <span className="font-medium text-[#111418]">Assigned to:</span> {incident.created_by}
               </p>
+            </div>
+
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={() => window.location.href = `/edit?id=${incident.id}`}
+                className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#f0f2f4] hover:bg-[#e5e7eb] transition-colors text-sm font-medium"
+                title="Edit incident"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" className="mr-1">
+                  <path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.32,64l24-24L216,84.68Z"></path>
+                </svg>
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(incident.id)}
+                className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#fee2e2] hover:bg-[#fecaca] transition-colors text-[#dc2626] text-sm font-medium"
+                title="Delete incident"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" className="mr-1">
+                  <path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path>
+                </svg>
+                Delete
+              </button>
             </div>
           </div>
          );

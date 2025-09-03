@@ -8,3 +8,4 @@
 - [x]  logging and error handling
 - [ ]  handle ui error display
 - [ ]  middleware
+- [ ]  when logging out cookies need to be cleared

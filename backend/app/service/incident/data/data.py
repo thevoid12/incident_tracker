@@ -52,10 +52,13 @@ class IncidentDataAccess:
     async def get_incident_by_id(self, incident_id: str) -> Incident | None:
         """Get incident by ID"""
         try:
-            LOGGER.debug(f"Querying incident by ID: {incident_id}")
+            # Convert string ID to integer for database query
+            incident_id_int = int(incident_id)
+            LOGGER.debug(f"Querying incident by ID: {incident_id} (converted to int: {incident_id_int})")
+
             result = await self.db.execute(
                 select(Incident).where(
-                    and_(Incident.id == incident_id, Incident.is_deleted == False)
+                    and_(Incident.id == incident_id_int, Incident.is_deleted == False)
                 )
             )
             incident = result.scalar_one_or_none()
@@ -67,6 +70,9 @@ class IncidentDataAccess:
 
             return incident
 
+        except ValueError as e:
+            LOGGER.error(f"Invalid incident ID format: {incident_id}")
+            raise DatabaseError(f"Invalid incident ID format: {incident_id}", operation="get_incident_by_id")
         except Exception as e:
             LOGGER.error(f"Failed to query incident by ID {incident_id}: {str(e)}")
             raise DatabaseError(f"Failed to query incident: {str(e)}", operation="get_incident_by_id")
@@ -101,7 +107,9 @@ class IncidentDataAccess:
     async def update_incident(self, incident_id: str, update_data: dict, updated_by: str) -> Incident:
         """Update an existing incident"""
         try:
-            LOGGER.debug(f"Updating incident {incident_id} with data: {update_data}")
+            # Convert string ID to integer for database query
+            incident_id_int = int(incident_id)
+            LOGGER.debug(f"Updating incident {incident_id} (converted to int: {incident_id_int}) with data: {update_data}")
 
             # Add updated_by to the update data
             update_data['updated_by'] = updated_by
@@ -109,7 +117,7 @@ class IncidentDataAccess:
             # Execute update
             result = await self.db.execute(
                 update(Incident)
-                .where(and_(Incident.id == incident_id, Incident.is_deleted == False))
+                .where(and_(Incident.id == incident_id_int, Incident.is_deleted == False))
                 .values(**update_data)
                 .returning(Incident)
             )
@@ -126,6 +134,9 @@ class IncidentDataAccess:
             LOGGER.info(f"Incident updated successfully: {incident_id}")
             return updated_incident
 
+        except ValueError as e:
+            LOGGER.error(f"Invalid incident ID format: {incident_id}")
+            raise DatabaseError(f"Invalid incident ID format: {incident_id}", operation="update_incident")
         except Exception as e:
             LOGGER.error(f"Failed to update incident {incident_id}: {str(e)}")
             await self.db.rollback()
@@ -136,12 +147,14 @@ class IncidentDataAccess:
     async def soft_delete_incident(self, incident_id: str, deleted_by: str) -> bool:
         """Soft delete an incident"""
         try:
-            LOGGER.debug(f"Soft deleting incident: {incident_id}")
+            # Convert string ID to integer for database query
+            incident_id_int = int(incident_id)
+            LOGGER.debug(f"Soft deleting incident: {incident_id} (converted to int: {incident_id_int})")
 
             # Execute soft delete
             result = await self.db.execute(
                 update(Incident)
-                .where(and_(Incident.id == incident_id, Incident.is_deleted == False))
+                .where(and_(Incident.id == incident_id_int, Incident.is_deleted == False))
                 .values(is_deleted=True, updated_by=deleted_by)
             )
 
@@ -153,6 +166,9 @@ class IncidentDataAccess:
             LOGGER.info(f"Incident soft deleted successfully: {incident_id}")
             return True
 
+        except ValueError as e:
+            LOGGER.error(f"Invalid incident ID format: {incident_id}")
+            raise DatabaseError(f"Invalid incident ID format: {incident_id}", operation="soft_delete_incident")
         except Exception as e:
             LOGGER.error(f"Failed to soft delete incident {incident_id}: {str(e)}")
             await self.db.rollback()

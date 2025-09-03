@@ -169,7 +169,7 @@ class IncidentService:
             LOGGER.info(f"Incident updated successfully: {incident_id}")
 
             return IncidentResponse(
-                id=updated_incident.id,
+                id=str(updated_incident.id),
                 title=updated_incident.title,
                 description=updated_incident.description,
                 status=updated_incident.status,
