@@ -72,11 +72,16 @@ class LoginService:
                 LOGGER.error(f"Invalid password attempt for email: {request.email}")
                 raise ValidationError("Invalid email or password")
 
+             # Generate JWT token
+            token = self.auth_service.generate_jwt(user.id, user.email)
+            LOGGER.debug(f"JWT token generated for user: {user.id}")
+
             LOGGER.info(f"Login successful for user ID: {user.id}")
             return LoginResponse(
                 message="Login successful",
                 user_id=user.id,
-                email=user.email
+                email=user.email,
+                token=token
             )
 
         except Exception as e:

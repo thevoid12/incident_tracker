@@ -61,3 +61,4 @@ class LoginResponse(BaseModel):
     message: str
     user_id: str
     email: EmailStr
+    token: str

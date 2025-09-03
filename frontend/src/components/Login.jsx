@@ -27,7 +27,7 @@ function Login() {
             </h2>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form action="/api/login" method="POST">
             <div className="mb-4">
               <label htmlFor="email" className="sr-only">Email</label>
               <input
