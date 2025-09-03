@@ -23,11 +23,6 @@ async def register_user(
     confirm_password: Annotated[str, Form()], 
 ):
     """Register a new user"""
-    print("Hiiii")
-    print(f"Registration attempt:")
-    print(f"Email: {email}")
-    print(f"Password: {password}")
-    print(f"Confirm Password: {confirm_password}")
 
     # Basic validation
     if password != confirm_password:
