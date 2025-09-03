@@ -8,6 +8,6 @@ and more importantly since db is a critical system,
 I want to only expose limited functions as part of db pkg
 """
 
-from .db import get_db, create_tables, drop_tables, engine
+from .db import get_db , engine
 
 __all__ = ["get_db", "engine"]
