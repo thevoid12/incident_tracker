@@ -8,10 +8,9 @@ build-dev:
 
 build-prod:
 	cp ./deploy/.env.prod ./.env
-	chmod +x bootstrap.sh
-	./bootstrap.sh
-	cd ./frontend && npm run build
-	cd ./backend/app && uv run uvicorn main:app --reload --port 8001
+	chmod +x ./deploy/bootstrap.sh
+	./deploy/bootstrap.sh
+
 
 # Development mode - separate servers
 dev:
