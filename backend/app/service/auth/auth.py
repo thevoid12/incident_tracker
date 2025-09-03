@@ -7,7 +7,8 @@ import bcrypt
 import jwt
 from datetime import datetime, timezone,timedelta
 from typing import Dict, Any
-from fastapi import Response
+from fastapi import Response, Request, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from core import LOGGER
 
@@ -89,3 +90,25 @@ class AuthService:
         except Exception as e:
             LOGGER.error(f"Failed to verify JWT: {str(e)}")
             raise
+
+
+# Dependency function to get current user from JWT token in cookies
+async def get_current_user(request: Request) -> Dict[str, Any]:
+    """Extract and verify JWT token from cookies, return user payload"""
+    auth_service = AuthService()
+    token = request.cookies.get(auth_service.cookie_name)
+
+    if not token:
+        LOGGER.warning("No authentication token found in cookies")
+        raise HTTPException(status_code=401, detail="Authentication required")
+
+    try:
+        payload = auth_service.verify_jwt(token)
+        LOGGER.debug(f"User authenticated: {payload.get('email')}")
+        return payload
+    except ValueError as e:
+        LOGGER.warning(f"JWT verification failed: {str(e)}")
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    except Exception as e:
+        LOGGER.error(f"Authentication error: {str(e)}")
+        raise HTTPException(status_code=401, detail="Authentication failed")
