@@ -85,50 +85,51 @@ const IncidentTable = () => {
   ];
 
   return (
-    <div className="px-4 py-3 @container">
-      <div className="flex overflow-hidden rounded-lg border border-[#dbe0e6] bg-white">
+    <div className="px-4 py-3">
+      {/* Desktop Table View */}
+      <div className="hidden lg:flex overflow-hidden rounded-lg border border-[#dbe0e6] bg-white">
         <table className="flex-1">
           <thead>
             <tr className="bg-white">
-              <th className="table-column-120 px-4 py-3 text-left text-[#111418] w-[400px] text-sm font-medium leading-normal">
+              <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-32">
                 Incident ID
               </th>
-              <th className="table-column-240 px-4 py-3 text-left text-[#111418] w-[400px] text-sm font-medium leading-normal">Subject</th>
-              <th className="table-column-360 px-4 py-3 text-left text-[#111418] w-60 text-sm font-medium leading-normal">Status</th>
-              <th className="table-column-480 px-4 py-3 text-left text-[#111418] w-60 text-sm font-medium leading-normal">Priority</th>
-              <th className="table-column-600 px-4 py-3 text-left text-[#111418] w-[400px] text-sm font-medium leading-normal">
+              <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal">Subject</th>
+              <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-32">Status</th>
+              <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-32">Priority</th>
+              <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-32">
                 Created Date
               </th>
-              <th className="table-column-720 px-4 py-3 text-left text-[#111418] w-[400px] text-sm font-medium leading-normal">
-               Created By 
+              <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal">
+                Assigned To
               </th>
             </tr>
           </thead>
           <tbody>
             {incidents.map((incident, index) => (
               <tr key={incident.id} className="border-t border-t-[#dbe0e6]">
-                <td className="table-column-120 h-[72px] px-4 py-2 w-[400px] text-[#111418] text-sm font-normal leading-normal">{incident.id}</td>
-                <td className="table-column-240 h-[72px] px-4 py-2 w-[400px] text-[#617589] text-sm font-normal leading-normal">
+                <td className="h-[72px] px-4 py-2 text-[#111418] text-sm font-normal leading-normal">{incident.id}</td>
+                <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
                   {incident.subject}
                 </td>
-                <td className="table-column-360 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
+                <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
                   <button
-                    className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-medium leading-normal w-full"
+                    className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-medium leading-normal"
                   >
                     <span className="truncate">{incident.status}</span>
                   </button>
                 </td>
-                <td className="table-column-480 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
+                <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
                   <button
-                    className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-medium leading-normal w-full"
+                    className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-medium leading-normal"
                   >
                     <span className="truncate">{incident.priority}</span>
                   </button>
                 </td>
-                <td className="table-column-600 h-[72px] px-4 py-2 w-[400px] text-[#617589] text-sm font-normal leading-normal">
+                <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
                   {incident.createdDate}
                 </td>
-                <td className="table-column-720 h-[72px] px-4 py-2 w-[400px] text-[#617589] text-sm font-normal leading-normal">
+                <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
                   {incident.assignedTo}
                 </td>
               </tr>
@@ -136,14 +137,37 @@ const IncidentTable = () => {
           </tbody>
         </table>
       </div>
-      <style jsx>{`
-        @container(max-width:120px){.table-column-120{display: none;}}
-        @container(max-width:240px){.table-column-240{display: none;}}
-        @container(max-width:360px){.table-column-360{display: none;}}
-        @container(max-width:480px){.table-column-480{display: none;}}
-        @container(max-width:600px){.table-column-600{display: none;}}
-        @container(max-width:720px){.table-column-720{display: none;}}
-      `}</style>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4">
+        {incidents.map((incident) => (
+          <div key={incident.id} className="bg-white border border-[#dbe0e6] rounded-lg p-4 shadow-sm">
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="text-[#111418] font-semibold text-lg">{incident.id}</h3>
+              <div className="flex gap-2">
+                <button className="px-3 py-1 bg-[#f0f2f4] text-[#111418] text-sm font-medium rounded-lg">
+                  {incident.status}
+                </button>
+                <button className="px-3 py-1 bg-[#f0f2f4] text-[#111418] text-sm font-medium rounded-lg">
+                  {incident.priority}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-[#617589] text-sm">
+                <span className="font-medium text-[#111418]">Subject:</span> {incident.subject}
+              </p>
+              <p className="text-[#617589] text-sm">
+                <span className="font-medium text-[#111418]">Created:</span> {incident.createdDate}
+              </p>
+              <p className="text-[#617589] text-sm">
+                <span className="font-medium text-[#111418]">Assigned to:</span> {incident.assignedTo}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
