@@ -18,9 +18,9 @@ class Incident(Base):
     description = Column(Text, nullable=True)
     status = Column(String(50), default="Open", nullable=False)
     priority = Column(String(50), default="Medium", nullable=False)
-    created_on = Column(TIMESTAMP, nullable=False)
+    created_on = Column(TIMESTAMP, nullable=False, server_default='CURRENT_TIMESTAMP')
     created_by = Column(String, nullable=False)
-    updated_on = Column(TIMESTAMP, nullable=False)
+    updated_on = Column(TIMESTAMP, nullable=False, server_default='CURRENT_TIMESTAMP')
     updated_by = Column(String, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
 

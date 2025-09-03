@@ -1,6 +1,13 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
+  const navigate = useNavigate();
+
+  const handleCreateIncident = () => {
+    navigate('/new');
+  };
+
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f4] px-4 md:px-10 py-3">
       <div className="flex items-center gap-4 text-[#111418]">
@@ -34,10 +41,18 @@ const Header = () => {
           </div>
         </label>
         <button
-          className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#1172d4] text-white text-sm font-bold leading-normal tracking-[0.015em]"
+          onClick={handleCreateIncident}
+          className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#1172d4] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0d5bb5] transition-colors"
         >
           <span className="truncate">Create Incident</span>
         </button>
+        <Link to="/login">
+          <button
+            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]"
+          >
+            <span className="truncate">Logout</span>
+          </button>
+        </Link>
       </div>
     </header>
   );

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './components/Login';
 import Register from './components/Register';
 import HomePage from './components/HomePage';
+import CreateIncident from './components/CreateIncident';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/new" element={<CreateIncident />} />
       </Routes>
     </Router>
   );
