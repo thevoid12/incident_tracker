@@ -82,3 +82,7 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+
+deploy/.env.dev
+deploy/.env.prod
