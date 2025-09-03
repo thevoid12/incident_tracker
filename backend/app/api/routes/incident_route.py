@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.responses import RedirectResponse
 from typing import Optional
 
 # Simplified imports for Makefile compatibility
@@ -22,7 +23,10 @@ async def create_incident(
     """Create a new incident"""
     service = IncidentService(db)
     try:
-        return await service.create_incident(request, current_user["email"])
+        await service.create_incident(request, current_user["email"])
+        # Create HTML redirect response with 303 See Other
+        response = RedirectResponse(url="/home", status_code=303)
+        return response
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
