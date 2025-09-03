@@ -31,7 +31,7 @@ async def create_incident(
 
 @router.get("/incidents", response_model=IncidentListResponse)
 async def list_incidents(
-    limit: int = Query(10, ge=1, le=100),
+    limit: int = Query(10, ge=1, le=10000),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)

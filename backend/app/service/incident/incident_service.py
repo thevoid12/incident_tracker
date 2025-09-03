@@ -128,15 +128,15 @@ class IncidentService:
                 raise
             raise DatabaseError(f"Incident list retrieval failed: {str(e)}", operation="list_incidents")
 
-    async def update_incident(self, incident_id: str, request: UpdateIncidentRequest, updated_by: str) -> IncidentResponse:
-        """Update an existing incident"""
-        LOGGER.info(f"Processing incident update for ID: {incident_id}")
+    async def update_incident(self, incident_id: str, request: UpdateIncidentRequest, updated_by: str, created_by: str) -> IncidentResponse:
+        """Update an existing incident - only if created by the same user"""
+        LOGGER.info(f"Processing incident update for ID: {incident_id} by user: {created_by}")
 
         try:
-            # Check if incident exists
-            existing_incident = await self.incident_data.get_incident_by_id(incident_id)
+            # Check if incident exists and belongs to the user
+            existing_incident = await self.incident_data.get_incident_by_id(incident_id, created_by)
             if not existing_incident:
-                LOGGER.warning(f"Incident not found for update: {incident_id}")
+                LOGGER.warning(f"Incident not found for update: {incident_id} for user: {created_by}")
                 raise NotFoundError("Incident not found", resource="incident")
 
             # Business logic validation
@@ -163,7 +163,8 @@ class IncidentService:
             updated_incident = await self.incident_data.update_incident(
                 incident_id=incident_id,
                 update_data=update_data,
-                updated_by=updated_by
+                updated_by=updated_by,
+                created_by=created_by
             )
 
             LOGGER.info(f"Incident updated successfully: {incident_id}")

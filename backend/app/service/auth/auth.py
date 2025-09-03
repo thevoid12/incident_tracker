@@ -76,6 +76,20 @@ class AuthService:
             LOGGER.error(f"Failed to set auth cookie: {str(e)}")
             raise
 
+    def clear_auth_cookie(self, response: Response) -> None:
+        """Clear the authentication cookie in the response"""
+        try:
+            response.delete_cookie(
+                key=self.cookie_name,
+                httponly=True,
+                secure=self.cookie_secure,
+                samesite="lax"
+            )
+            LOGGER.debug("Auth cookie cleared successfully")
+        except Exception as e:
+            LOGGER.error(f"Failed to clear auth cookie: {str(e)}")
+            raise
+
     def verify_jwt(self, token: str) -> Dict[str, Any]:
         """Verify and decode a JWT token"""
         try:

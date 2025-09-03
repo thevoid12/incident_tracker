@@ -8,6 +8,32 @@ const Header = () => {
     navigate('/new');
   };
 
+  const handleLogout = async () => {
+    try {
+      // Call backend logout route to clear cookies and redirect
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include',
+        redirect: 'follow', // Follow the redirect response
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // If redirect was followed, we should be at /login now
+      // But if not, manually navigate
+      if (response.redirected) {
+        window.location.href = response.url;
+      } else {
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Fallback navigation if backend call fails
+      navigate('/login');
+    }
+  };
+
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f4] px-4 md:px-10 py-3">
       <Link to="/home" className="flex items-center gap-4 text-[#111418] cursor-pointer hover:opacity-80 transition-opacity">
@@ -46,13 +72,12 @@ const Header = () => {
         >
           <span className="truncate">Create Incident</span>
         </button>
-        <Link to="/login">
-          <button
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-bold leading-normal tracking-[0.015em]"
-          >
-            <span className="truncate">Logout</span>
-          </button>
-        </Link>
+        <button
+          onClick={handleLogout}
+          className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#e5e7eb] transition-colors"
+        >
+          <span className="truncate">Logout</span>
+        </button>
       </div>
     </header>
   );

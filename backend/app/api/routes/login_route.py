@@ -45,10 +45,23 @@ async def register_user(
 
         # Create HTML redirect response with 303 See Other
         response = RedirectResponse(url="/home", status_code=303)
-        
+
         # Set the authentication cookie
         auth_service.set_auth_cookie(response, result.token)
-        
+
         return response
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/logout")
+async def logout_user():
+    """Logout user by clearing the authentication cookie"""
+    auth_service = AuthService()
+
+    # Create HTML redirect response with 303 See Other
+    response = RedirectResponse(url="/login", status_code=303)
+
+    # Clear the authentication cookie
+    auth_service.clear_auth_cookie(response)
+
+    return response
