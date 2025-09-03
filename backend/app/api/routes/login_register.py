@@ -18,7 +18,7 @@ async def login_user(
     try:
         result = await service.login_user(request)
         return result
-    except ValueError as e:
+    except Exception as e: # TODO: we might need to display it in the ui or error pop up
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/reg")
@@ -26,7 +26,7 @@ async def register_user(
     request: RegisterRequest = Depends(RegisterRequest.as_form),  # Supports form data
     db: AsyncSession = Depends(get_db)
 ):
-    """Register a new user - accepts both JSON and Form data"""
+    """Register a new user"""
     service = LoginService(db)
     try:
         result = await service.register_user(request)

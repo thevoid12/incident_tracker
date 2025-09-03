@@ -11,7 +11,9 @@ setup_logging()
 
 app = FastAPI(title="Incident Tracker", version="1.0.0")
 
-# Global exception handler
+# Global exception handler. The exception handler is needed
+# here because, when an exception arises we need to safely log
+# and make sure app dont crash and runs continuously.
 @app.exception_handler(AppException)
 async def app_exception_handler(request: Request, exc: AppException):
     LOGGER.error(
