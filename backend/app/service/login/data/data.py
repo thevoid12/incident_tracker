@@ -10,6 +10,7 @@ from core import LOGGER, DatabaseError
 
 # Simplified import for Makefile compatibility
 from service.db.models.user_model import User
+from service.auth.auth import AuthService
 
 
 class UserDataAccess:
@@ -17,6 +18,7 @@ class UserDataAccess:
 
     def __init__(self, db: AsyncSession):
         self.db = db
+        self.auth_service = AuthService()
 
     async def create_user(self, email: str, password: str) -> User:
         """Create a new user in the database"""
@@ -25,11 +27,14 @@ class UserDataAccess:
             user_id = str(uuid.uuid4())
             LOGGER.debug(f"Creating user with ID: {user_id}, email: {email}")
 
+            # Hash the password before saving
+            hashed_password = self.auth_service.hash_password(password)
+
             # Create user instance
             user = User(
                 id=user_id,
                 email=email,
-                password=password,  # In real app, this should be hashed
+                password=hashed_password,
                 created_by=user_id,  # Self-created
                 updated_by=user_id   # Self-updated
             )

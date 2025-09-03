@@ -35,6 +35,7 @@ class RegisterResponse(BaseModel):
     message: str
     user_id: str
     email: EmailStr
+    token: str # jwt
 
 
 class LoginRequest(BaseModel):

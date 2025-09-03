@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Simplified imports for Makefile compatibility
 from service.login.login_service import LoginService
 from service.login.model import RegisterRequest, LoginRequest
 from service.db import get_db
+from service.auth.auth import AuthService
 
 router = APIRouter(tags=["login-register"])
 
@@ -28,8 +30,20 @@ async def register_user(
 ):
     """Register a new user"""
     service = LoginService(db)
+    auth_service = AuthService()
     try:
         result = await service.register_user(request)
-        return result
+
+        # Create JSON response with cookie
+        response = JSONResponse(content={
+            "message": result.message,
+            "user_id": result.user_id,
+            "email": result.email
+        })
+
+        # Set the authentication cookie
+        auth_service.set_auth_cookie(response, result.token)
+
+        return response
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

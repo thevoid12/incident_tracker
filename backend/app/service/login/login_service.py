@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core import LOGGER, ValidationError, ConflictError, NotFoundError, DatabaseError
 from .data.data import UserDataAccess
 from .model import RegisterRequest, RegisterResponse, LoginRequest, LoginResponse
+from service.auth.auth import AuthService
 
 
 class LoginService:
@@ -15,6 +16,7 @@ class LoginService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.user_data = UserDataAccess(db)
+        self.auth_service = AuthService()
 
     async def register_user(self, request: RegisterRequest) -> RegisterResponse:
         """Register a new user with validation"""
@@ -32,15 +34,20 @@ class LoginService:
                 LOGGER.warning(f"Attempted registration with existing email: {request.email}")
                 raise ConflictError("Email already registered", resource="user")
 
-            # Create user through data layer
+            # Create user through data layer (password is now hashed in create_user)
             user = await self.user_data.create_user(request.email, request.password)
             LOGGER.info(f"User registered successfully with ID: {user.id}")
 
-            # Return response
+            # Generate JWT token
+            token = self.auth_service.generate_jwt(user.id, user.email)
+            LOGGER.debug(f"JWT token generated for user: {user.id}")
+
+            # Return response with token
             return RegisterResponse(
                 message="User registered successfully",
                 user_id=user.id,
-                email=user.email
+                email=user.email,
+                token=token
             )
 
         except Exception as e:
@@ -60,9 +67,8 @@ class LoginService:
                 LOGGER.error(f"Login attempt for non-existent email: {request.email}")
                 raise NotFoundError("User not found", "user")
 
-            # In a real app, you'd verify the password hash
-            # For now, just check if password matches (not secure!)
-            if user.password != request.password:
+            # Verify the password hash
+            if not self.auth_service.verify_password(request.password, user.password):
                 LOGGER.error(f"Invalid password attempt for email: {request.email}")
                 raise ValidationError("Invalid email or password")
 
