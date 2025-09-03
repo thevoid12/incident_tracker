@@ -9,14 +9,19 @@ from service.auth.auth import AuthService
 
 
 async def auth_middleware(request: Request, call_next):
-    """Middleware to check JWT token for all routes except login/register and static assets"""
+    """Middleware to check JWT token for page routes except login/register and static assets"""
     # Skip authentication for static assets
     if request.url.path.startswith("/assets/"):
         response = await call_next(request)
         return response
 
-    # Define public endpoints that don't require authentication
-    public_endpoints = ["/login", "/register", "/api/login", "/api/reg"]
+    # Skip authentication for API routes - they handle auth through dependency injection
+    if request.url.path.startswith("/api/"):
+        response = await call_next(request)
+        return response
+
+    # Define public page endpoints that don't require authentication
+    public_endpoints = ["/login", "/register"]
 
     # Check if the current path is a public endpoint
     is_public_endpoint = any(request.url.path == endpoint for endpoint in public_endpoints)

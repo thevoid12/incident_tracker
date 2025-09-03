@@ -42,6 +42,9 @@ const CreateIncident = () => {
           status: incident.status || 'Open',
           priority: incident.priority || 'Medium'
         });
+      } else if (response.status === 401) {
+        alert('Session expired. Please log in again.');
+        window.location.href = '/login';
       } else {
         alert('Failed to load incident data');
       }
@@ -105,6 +108,10 @@ const CreateIncident = () => {
                       alert(isEditing ? 'Incident updated successfully!' : 'Incident created successfully!');
                       window.location.href = '/home';
                     }
+                  } else if (response.status === 401) {
+                    // Authentication failed, redirect to login
+                    alert('Session expired. Please log in again.');
+                    window.location.href = '/login';
                   } else {
                     alert(isEditing ? 'Failed to update incident' : 'Failed to create incident');
                   }

@@ -31,6 +31,9 @@ const IncidentTable = () => {
         if (response.ok) {
           alert('Incident deleted successfully');
           refreshIncidents(); // Refresh incidents using context
+        } else if (response.status === 401) {
+          alert('Session expired. Please log in again.');
+          window.location.href = '/login';
         } else {
           alert('Failed to delete incident');
         }
@@ -56,6 +59,9 @@ const IncidentTable = () => {
         const incident = await response.json();
         setSelectedIncident(incident);
         setShowDetails(true);
+      } else if (response.status === 401) {
+        alert('Session expired. Please log in again.');
+        window.location.href = '/login';
       } else {
         alert('Failed to fetch incident details');
       }

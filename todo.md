@@ -8,6 +8,8 @@
 - [x]  logging and error handling
 - [ ]  handle ui error display dont display too much details
 - [x]  middleware
-- [ ]  when logging out cookies need to be cleared
+- [x]  when logging out cookies need to be cleared
 - [ ]  need to clarify: why all filtering needs to be in ui
 - [ ]  limit shouldnt be 100. make it configurable somewhere
+- [ ]  pytest
+- [ ]  rbac

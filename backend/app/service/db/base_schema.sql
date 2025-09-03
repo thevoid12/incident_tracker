@@ -22,3 +22,7 @@ updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 updated_by TEXT NOT NULL, 
 is_deleted BOOLEAN DEFAULT FALSE
 );
+
+CREATE INDEX if not exists idx_incident_tracker_status ON incident_tracker(status);
+
+CREATE INDEX if not exists idx_incident_tracker_created_on ON incident_tracker(created_on);

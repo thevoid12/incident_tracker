@@ -44,20 +44,32 @@ export const IncidentProvider = ({ children }) => {
       const data = await response.json();
       console.log('Response data:', data);
 
-      // Check if we have the expected data structure
-      if (data && data.incidents && Array.isArray(data.incidents)) {
-        const fetchedIncidents = data.incidents;
-        setAllIncidents(fetchedIncidents);
-        setIncidents(fetchedIncidents);
-        setPagination(prev => ({
-          ...prev,
-          totalCount: data.total_count || fetchedIncidents.length,
-          totalPages: data.total_pages || Math.ceil(fetchedIncidents.length / prev.pageSize)
-        }));
+      // Check if response is ok
+      if (response.ok) {
+        // Check if we have the expected data structure
+        if (data && data.incidents && Array.isArray(data.incidents)) {
+          const fetchedIncidents = data.incidents;
+          setAllIncidents(fetchedIncidents);
+          setIncidents(fetchedIncidents);
+          setPagination(prev => ({
+            ...prev,
+            totalCount: data.total_count || fetchedIncidents.length,
+            totalPages: data.total_pages || Math.ceil(fetchedIncidents.length / prev.pageSize)
+          }));
+        } else {
+          console.log('Unexpected response format:', data);
+          setError('Failed to fetch incidents - unexpected response format');
+        }
+      } else if (response.status === 401) {
+        setError('Session expired. Please log in again.');
+        // Redirect to login after a short delay to show the error
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
       } else {
         console.log('Response not ok:', response.status, response.statusText);
-        console.log('Unexpected response format:', data);
-        setError('Failed to fetch incidents - unexpected response format');
+        console.log('Response data:', data);
+        setError('Failed to fetch incidents');
       }
     } catch (err) {
       setError('Error fetching incidents');
@@ -84,24 +96,36 @@ export const IncidentProvider = ({ children }) => {
       const data = await response.json();
       console.log('Response data:', data);
 
-      // Check if we have the expected data structure
-      if (data && data.incidents && Array.isArray(data.incidents)) {
-        const fetchedIncidents = data.incidents;
-        setAllIncidents(fetchedIncidents);
-        setIncidents(fetchedIncidents);
-        setPagination({
-          page: data.page || page,
-          pageSize: data.page_size || pagination.pageSize,
-          totalCount: data.total_count || 0,
-          totalPages: data.total_pages || 0
-        });
+      // Check if response is ok
+      if (response.ok) {
+        // Check if we have the expected data structure
+        if (data && data.incidents && Array.isArray(data.incidents)) {
+          const fetchedIncidents = data.incidents;
+          setAllIncidents(fetchedIncidents);
+          setIncidents(fetchedIncidents);
+          setPagination({
+            page: data.page || page,
+            pageSize: data.page_size || pagination.pageSize,
+            totalCount: data.total_count || 0,
+            totalPages: data.total_pages || 0
+          });
+        } else {
+          console.log('Unexpected response format:', data);
+          if (data.detail) {
+            console.log('Validation errors:', data.detail);
+          }
+          setError('Failed to fetch incidents - unexpected response format');
+        }
+      } else if (response.status === 401) {
+        setError('Session expired. Please log in again.');
+        // Redirect to login after a short delay to show the error
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
       } else {
         console.log('Response not ok:', response.status, response.statusText);
-        console.log('Unexpected response format:', data);
-        if (data.detail) {
-          console.log('Validation errors:', data.detail);
-        }
-        setError('Failed to fetch incidents - unexpected response format');
+        console.log('Response data:', data);
+        setError('Failed to fetch incidents');
       }
     } catch (err) {
       setError('Error fetching incidents');
