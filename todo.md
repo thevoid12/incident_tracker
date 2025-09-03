@@ -7,3 +7,4 @@
 - [ ]  change env of docker compose file
 - [x]  logging and error handling
 - [ ]  handle ui error display
+- [ ]  middleware

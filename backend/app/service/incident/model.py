@@ -112,5 +112,5 @@ class IncidentFilterRequest(BaseModel):
     status: Optional[IncidentStatus] = None
     priority: Optional[IncidentPriority] = None
     search: Optional[str] = None  # Search in title and description
-    limit: int = Field(10, ge=1, le=100)
+    limit: int = Field(5, ge=1, le=100)
     offset: int = Field(0, ge=0)

@@ -8,7 +8,7 @@ from core import LOGGER, ValidationError, NotFoundError, DatabaseError
 from .data.data import IncidentDataAccess
 from .model import (
     CreateIncidentRequest, UpdateIncidentRequest, IncidentResponse,
-    IncidentListResponse, IncidentFilterRequest
+    IncidentListResponse
 )
 
 
@@ -86,15 +86,15 @@ class IncidentService:
                 raise
             raise DatabaseError(f"Incident retrieval failed: {str(e)}", operation="get_incident")
 
-    async def list_incidents(self, filters: IncidentFilterRequest) -> IncidentListResponse:
-        """List incidents with filtering and pagination"""
-        LOGGER.info(f"Processing incident list request with filters: {filters}")
+    async def list_incidents(self, limit: int = 10, offset: int = 0) -> IncidentListResponse:
+        """List incidents with pagination only (no filtering)"""
+        LOGGER.info(f"Processing incident list request with pagination: limit={limit}, offset={offset}")
 
         try:
-            incidents, total_count = await self.incident_data.get_incidents_with_filters(filters)
+            incidents, total_count = await self.incident_data.get_incidents_paginated(limit, offset)
 
-            # Calculate total pages for backward compatibility
-            total_pages = (total_count + filters.limit - 1) // filters.limit
+            # Calculate total pages
+            total_pages = (total_count + limit - 1) // limit
 
             # Convert to response models
             incident_responses = []
@@ -117,8 +117,8 @@ class IncidentService:
             return IncidentListResponse(
                 incidents=incident_responses,
                 total_count=total_count,
-                page=(filters.offset // filters.limit) + 1,  # Calculate page from offset
-                page_size=filters.limit,  # Return limit as page_size for compatibility
+                page=(offset // limit) + 1,  # Calculate page from offset
+                page_size=limit,
                 total_pages=total_pages
             )
 

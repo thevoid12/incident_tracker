@@ -1,88 +1,26 @@
 import React from 'react';
 
-const IncidentTable = () => {
-  const incidents = [
-    {
-      id: 'INC001',
-      subject: 'Network Connectivity Issue',
-      status: 'Open',
-      priority: 'High',
-      createdDate: '2024-01-15',
-      assignedTo: 'Unassigned'
-    },
-    {
-      id: 'INC002',
-      subject: 'Software Bug in Application X',
-      status: 'In Progress',
-      priority: 'Medium',
-      createdDate: '2024-01-16',
-      assignedTo: 'Alex Harper'
-    },
-    {
-      id: 'INC003',
-      subject: 'Printer Malfunction',
-      status: 'Resolved',
-      priority: 'Low',
-      createdDate: '2024-01-17',
-      assignedTo: 'Jordan Carter'
-    },
-    {
-      id: 'INC004',
-      subject: 'Email Server Down',
-      status: 'Open',
-      priority: 'High',
-      createdDate: '2024-01-18',
-      assignedTo: 'Unassigned'
-    },
-    {
-      id: 'INC005',
-      subject: 'Database Performance Issue',
-      status: 'In Progress',
-      priority: 'Medium',
-      createdDate: '2024-01-19',
-      assignedTo: 'Taylor Bennett'
-    },
-    {
-      id: 'INC006',
-      subject: 'Security Breach Alert',
-      status: 'Resolved',
-      priority: 'High',
-      createdDate: '2024-01-20',
-      assignedTo: 'Casey Evans'
-    },
-    {
-      id: 'INC007',
-      subject: 'Hardware Failure on Server Y',
-      status: 'Open',
-      priority: 'High',
-      createdDate: '2024-01-21',
-      assignedTo: 'Unassigned'
-    },
-    {
-      id: 'INC008',
-      subject: 'User Access Request',
-      status: 'In Progress',
-      priority: 'Low',
-      createdDate: '2024-01-22',
-      assignedTo: 'Riley Foster'
-    },
-    {
-      id: 'INC009',
-      subject: 'Data Loss Incident',
-      status: 'Resolved',
-      priority: 'High',
-      createdDate: '2024-01-23',
-      assignedTo: 'Morgan Reed'
-    },
-    {
-      id: 'INC010',
-      subject: 'Application Z Crashing',
-      status: 'Open',
-      priority: 'Medium',
-      createdDate: '2024-01-24',
-      assignedTo: 'Unassigned'
-    }
-  ];
+const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
+  // Format date for display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
+  // Show empty state
+  if (!incidents || incidents.length === 0) {
+    return (
+      <div className="px-4 py-3">
+        <div className="text-center py-8">
+          <p className="text-[#617589]">No incidents found.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-3">
@@ -92,7 +30,7 @@ const IncidentTable = () => {
           <thead>
             <tr className="bg-white">
               <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-32">
-                Incident ID
+                #
               </th>
               <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal">Subject</th>
               <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-32">Status</th>
@@ -106,44 +44,49 @@ const IncidentTable = () => {
             </tr>
           </thead>
           <tbody>
-            {incidents.map((incident, index) => (
-              <tr key={incident.id} className="border-t border-t-[#dbe0e6]">
-                <td className="h-[72px] px-4 py-2 text-[#111418] text-sm font-normal leading-normal">{incident.id}</td>
-                <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
-                  {incident.subject}
-                </td>
-                <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
-                  <button
-                    className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-medium leading-normal"
-                  >
-                    <span className="truncate">{incident.status}</span>
-                  </button>
-                </td>
-                <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
-                  <button
-                    className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-medium leading-normal"
-                  >
-                    <span className="truncate">{incident.priority}</span>
-                  </button>
-                </td>
-                <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
-                  {incident.createdDate}
-                </td>
-                <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
-                  {incident.assignedTo}
-                </td>
-              </tr>
-            ))}
+            {incidents.map((incident, index) => {
+              const sequentialNumber = (currentPage - 1) * pageSize + index + 1;
+              return (
+                <tr key={incident.id} className="border-t border-t-[#dbe0e6]">
+                  <td className="h-[72px] px-4 py-2 text-[#111418] text-sm font-normal leading-normal">{sequentialNumber}</td>
+                  <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
+                    {incident.title}
+                  </td>
+                  <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+                    <button
+                      className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-medium leading-normal"
+                    >
+                      <span className="truncate">{incident.status}</span>
+                    </button>
+                  </td>
+                  <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
+                    <button
+                      className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-medium leading-normal"
+                    >
+                      <span className="truncate">{incident.priority}</span>
+                    </button>
+                  </td>
+                  <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
+                    {formatDate(incident.created_on)}
+                  </td>
+                  <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
+                    {incident.created_by}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
       {/* Mobile Card View */}
       <div className="lg:hidden space-y-4">
-        {incidents.map((incident) => (
-          <div key={incident.id} className="bg-white border border-[#dbe0e6] rounded-lg p-4 shadow-sm">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="text-[#111418] font-semibold text-lg">{incident.id}</h3>
+        {incidents.map((incident, index) => {
+          const sequentialNumber = (currentPage - 1) * pageSize + index + 1;
+          return (
+            <div key={incident.id} className="bg-white border border-[#dbe0e6] rounded-lg p-4 shadow-sm">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-[#111418] font-semibold text-lg">#{sequentialNumber}</h3>
               <div className="flex gap-2">
                 <button className="px-3 py-1 bg-[#f0f2f4] text-[#111418] text-sm font-medium rounded-lg">
                   {incident.status}
@@ -156,17 +99,18 @@ const IncidentTable = () => {
 
             <div className="space-y-2">
               <p className="text-[#617589] text-sm">
-                <span className="font-medium text-[#111418]">Subject:</span> {incident.subject}
+                <span className="font-medium text-[#111418]">Subject:</span> {incident.title}
               </p>
               <p className="text-[#617589] text-sm">
-                <span className="font-medium text-[#111418]">Created:</span> {incident.createdDate}
+                <span className="font-medium text-[#111418]">Created:</span> {formatDate(incident.created_on)}
               </p>
               <p className="text-[#617589] text-sm">
-                <span className="font-medium text-[#111418]">Assigned to:</span> {incident.assignedTo}
+                <span className="font-medium text-[#111418]">Assigned to:</span> {incident.created_by}
               </p>
             </div>
           </div>
-        ))}
+         );
+       })}
       </div>
     </div>
   );

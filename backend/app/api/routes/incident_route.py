@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import RedirectResponse
-from typing import Optional
 
 # Simplified imports for Makefile compatibility
 from service.incident.incident_service import IncidentService
 from service.incident.model import (
     CreateIncidentRequest, UpdateIncidentRequest, IncidentResponse,
-    IncidentListResponse, IncidentFilterRequest, IncidentStatus, IncidentPriority
+    IncidentListResponse
 )
 from service.db import get_db
 from service.auth.auth import get_current_user
@@ -32,25 +31,15 @@ async def create_incident(
 
 @router.get("/incidents", response_model=IncidentListResponse)
 async def list_incidents(
-    status: Optional[IncidentStatus] = Query(None),
-    priority: Optional[IncidentPriority] = Query(None),
-    search: Optional[str] = Query(None),
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """List incidents with filtering and pagination"""
+    """List incidents with pagination only (no filtering)"""
     service = IncidentService(db)
     try:
-        filters = IncidentFilterRequest(
-            status=status,
-            priority=priority,
-            search=search,
-            limit=limit,
-            offset=offset
-        )
-        return await service.list_incidents(filters)
+        return await service.list_incidents(limit=limit, offset=offset)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

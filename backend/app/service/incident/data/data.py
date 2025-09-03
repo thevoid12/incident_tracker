@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete, func, and_, or_
 from core import LOGGER, DatabaseError
 from service.db.models.incident_model import Incident
-from ..model import IncidentFilterRequest
 
 
 class IncidentDataAccess:
@@ -72,35 +71,21 @@ class IncidentDataAccess:
             LOGGER.error(f"Failed to query incident by ID {incident_id}: {str(e)}")
             raise DatabaseError(f"Failed to query incident: {str(e)}", operation="get_incident_by_id")
 
-    async def get_incidents_with_filters(self, filters: IncidentFilterRequest) -> tuple[list[Incident], int]:
-        """Get incidents with filtering and pagination"""
+    async def get_incidents_paginated(self, limit: int, offset: int) -> tuple[list[Incident], int]:
+        """Get incidents with pagination only (no filtering)"""
         try:
-            LOGGER.debug(f"Querying incidents with filters: {filters}")
+            LOGGER.debug(f"Querying incidents with pagination: limit={limit}, offset={offset}")
 
-            # Build base query
+            # Build base query - only exclude deleted incidents
             query = select(Incident).where(Incident.is_deleted == False)
 
-            # Apply filters
-            if filters.status:
-                query = query.where(Incident.status == filters.status)
-            if filters.priority:
-                query = query.where(Incident.priority == filters.priority)
-            if filters.search:
-                search_term = f"%{filters.search}%"
-                query = query.where(
-                    or_(
-                        Incident.title.ilike(search_term),
-                        Incident.description.ilike(search_term)
-                    )
-                )
-
-            # Get total count
+            # Get total count of all non-deleted incidents
             count_query = select(func.count()).select_from(query.subquery())
             total_count_result = await self.db.execute(count_query)
             total_count = total_count_result.scalar()
 
             # Apply pagination using limit and offset
-            query = query.offset(filters.offset).limit(filters.limit)
+            query = query.offset(offset).limit(limit)
 
             # Execute query
             result = await self.db.execute(query)
@@ -110,8 +95,8 @@ class IncidentDataAccess:
             return incidents, total_count
 
         except Exception as e:
-            LOGGER.error(f"Failed to query incidents with filters: {str(e)}")
-            raise DatabaseError(f"Failed to query incidents: {str(e)}", operation="get_incidents_with_filters")
+            LOGGER.error(f"Failed to query incidents with pagination: {str(e)}")
+            raise DatabaseError(f"Failed to query incidents: {str(e)}", operation="get_incidents_paginated")
 
     async def update_incident(self, incident_id: str, update_data: dict, updated_by: str) -> Incident:
         """Update an existing incident"""
