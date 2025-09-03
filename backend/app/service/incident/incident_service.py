@@ -55,14 +55,14 @@ class IncidentService:
                 raise
             raise DatabaseError(f"Incident creation failed: {str(e)}", operation="create_incident")
 
-    async def get_incident(self, incident_id: str) -> IncidentResponse:
-        """Get a single incident by ID"""
-        LOGGER.info(f"Processing incident retrieval for ID: {incident_id}")
+    async def get_incident(self, incident_id: str, created_by: str) -> IncidentResponse:
+        """Get a single incident by ID - only if created by the same user"""
+        LOGGER.info(f"Processing incident retrieval for ID: {incident_id} by user: {created_by}")
 
         try:
-            incident = await self.incident_data.get_incident_by_id(incident_id)
+            incident = await self.incident_data.get_incident_by_id(incident_id, created_by)
             if not incident:
-                LOGGER.warning(f"Incident not found: {incident_id}")
+                LOGGER.warning(f"Incident not found: {incident_id} for user: {created_by}")
                 raise NotFoundError("Incident not found", resource="incident")
 
             LOGGER.debug(f"Incident retrieved successfully: {incident_id}")
@@ -86,12 +86,12 @@ class IncidentService:
                 raise
             raise DatabaseError(f"Incident retrieval failed: {str(e)}", operation="get_incident")
 
-    async def list_incidents(self, limit: int = 10, offset: int = 0) -> IncidentListResponse:
-        """List incidents with pagination only (no filtering)"""
-        LOGGER.info(f"Processing incident list request with pagination: limit={limit}, offset={offset}")
+    async def list_incidents(self, created_by: str, limit: int = 10, offset: int = 0) -> IncidentListResponse:
+        """List incidents with pagination filtered by created_by"""
+        LOGGER.info(f"Processing incident list request with pagination: limit={limit}, offset={offset} for user: {created_by}")
 
         try:
-            incidents, total_count = await self.incident_data.get_incidents_paginated(limit, offset)
+            incidents, total_count = await self.incident_data.get_incidents_paginated(limit, offset, created_by)
 
             # Calculate total pages
             total_pages = (total_count + limit - 1) // limit
@@ -112,7 +112,7 @@ class IncidentService:
                     is_deleted=incident.is_deleted
                 ))
 
-            LOGGER.debug(f"Incident list retrieved successfully: {len(incident_responses)} incidents")
+            LOGGER.debug(f"Incident list retrieved successfully: {len(incident_responses)} incidents for user: {created_by}")
 
             return IncidentListResponse(
                 incidents=incident_responses,
@@ -187,21 +187,22 @@ class IncidentService:
                 raise
             raise DatabaseError(f"Incident update failed: {str(e)}", operation="update_incident")
 
-    async def delete_incident(self, incident_id: str, deleted_by: str) -> bool:
-        """Soft delete an incident"""
-        LOGGER.info(f"Processing incident deletion for ID: {incident_id}")
+    async def delete_incident(self, incident_id: str, deleted_by: str, created_by: str) -> bool:
+        """Soft delete an incident - only if created by the same user"""
+        LOGGER.info(f"Processing incident deletion for ID: {incident_id} by user: {created_by}")
 
         try:
-            # Check if incident exists
-            existing_incident = await self.incident_data.get_incident_by_id(incident_id)
+            # Check if incident exists and belongs to the user
+            existing_incident = await self.incident_data.get_incident_by_id(incident_id, created_by)
             if not existing_incident:
-                LOGGER.warning(f"Incident not found for deletion: {incident_id}")
+                LOGGER.warning(f"Incident not found for deletion: {incident_id} for user: {created_by}")
                 raise NotFoundError("Incident not found", resource="incident")
 
             # Soft delete through data layer
             success = await self.incident_data.soft_delete_incident(
                 incident_id=incident_id,
-                deleted_by=deleted_by
+                deleted_by=deleted_by,
+                created_by=created_by
             )
 
             if success:

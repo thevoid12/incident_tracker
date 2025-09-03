@@ -36,10 +36,10 @@ async def list_incidents(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """List incidents with pagination only (no filtering)"""
+    """List incidents with pagination filtered by created_by"""
     service = IncidentService(db)
     try:
-        return await service.list_incidents(limit=limit, offset=offset)
+        return await service.list_incidents(current_user["email"], limit=limit, offset=offset)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -49,10 +49,10 @@ async def get_incident(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """Get a single incident by ID"""
+    """Get a single incident by ID - only if created by the same user"""
     service = IncidentService(db)
     try:
-        return await service.get_incident(id)
+        return await service.get_incident(id, current_user["email"])
     except Exception as e:
         if "not found" in str(e).lower():
             raise HTTPException(status_code=404, detail=str(e))
@@ -65,10 +65,10 @@ async def update_incident(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """Update an existing incident"""
+    """Update an existing incident - only if created by the same user"""
     service = IncidentService(db)
     try:
-        await service.update_incident(id, request, current_user["email"])
+        await service.update_incident(id, request, current_user["email"], current_user["email"])
         # Create HTML redirect response with 303 See Other
         response = RedirectResponse(url="/home", status_code=303)
         return response
@@ -83,10 +83,10 @@ async def delete_incident(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """Soft delete an incident"""
+    """Soft delete an incident - only if created by the same user"""
     service = IncidentService(db)
     try:
-        success = await service.delete_incident(id, current_user["email"])
+        success = await service.delete_incident(id, current_user["email"], current_user["email"])
         if success:
             return {"message": "Incident deleted successfully"}
         else:

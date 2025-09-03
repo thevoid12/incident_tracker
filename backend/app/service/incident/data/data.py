@@ -49,16 +49,20 @@ class IncidentDataAccess:
             await self.db.rollback()
             raise DatabaseError(f"Failed to create incident: {str(e)}", operation="create_incident")
 
-    async def get_incident_by_id(self, incident_id: str) -> Incident | None:
-        """Get incident by ID"""
+    async def get_incident_by_id(self, incident_id: str, created_by: str) -> Incident | None:
+        """Get incident by ID and created_by"""
         try:
             # Convert string ID to integer for database query
             incident_id_int = int(incident_id)
-            LOGGER.debug(f"Querying incident by ID: {incident_id} (converted to int: {incident_id_int})")
+            LOGGER.debug(f"Querying incident by ID: {incident_id} (converted to int: {incident_id_int}) for user: {created_by}")
 
             result = await self.db.execute(
                 select(Incident).where(
-                    and_(Incident.id == incident_id_int, Incident.is_deleted == False)
+                    and_(
+                        Incident.id == incident_id_int,
+                        Incident.is_deleted == False,
+                        Incident.created_by == created_by
+                    )
                 )
             )
             incident = result.scalar_one_or_none()
@@ -66,7 +70,7 @@ class IncidentDataAccess:
             if incident:
                 LOGGER.debug(f"Incident found: {incident_id}")
             else:
-                LOGGER.debug(f"No incident found with ID: {incident_id}")
+                LOGGER.debug(f"No incident found with ID: {incident_id} for user: {created_by}")
 
             return incident
 
@@ -77,15 +81,17 @@ class IncidentDataAccess:
             LOGGER.error(f"Failed to query incident by ID {incident_id}: {str(e)}")
             raise DatabaseError(f"Failed to query incident: {str(e)}", operation="get_incident_by_id")
 
-    async def get_incidents_paginated(self, limit: int, offset: int) -> tuple[list[Incident], int]:
-        """Get incidents with pagination only (no filtering)"""
+    async def get_incidents_paginated(self, limit: int, offset: int, created_by: str) -> tuple[list[Incident], int]:
+        """Get incidents with pagination filtered by created_by"""
         try:
-            LOGGER.debug(f"Querying incidents with pagination: limit={limit}, offset={offset}")
+            LOGGER.debug(f"Querying incidents with pagination: limit={limit}, offset={offset} for user: {created_by}")
 
-            # Build base query - only exclude deleted incidents
-            query = select(Incident).where(Incident.is_deleted == False)
+            # Build base query - exclude deleted incidents and filter by created_by
+            query = select(Incident).where(
+                and_(Incident.is_deleted == False, Incident.created_by == created_by)
+            )
 
-            # Get total count of all non-deleted incidents
+            # Get total count of non-deleted incidents for this user
             count_query = select(func.count()).select_from(query.subquery())
             total_count_result = await self.db.execute(count_query)
             total_count = total_count_result.scalar()
@@ -97,27 +103,31 @@ class IncidentDataAccess:
             result = await self.db.execute(query)
             incidents = result.scalars().all()
 
-            LOGGER.debug(f"Found {len(incidents)} incidents out of {total_count} total")
+            LOGGER.debug(f"Found {len(incidents)} incidents out of {total_count} total for user: {created_by}")
             return incidents, total_count
 
         except Exception as e:
             LOGGER.error(f"Failed to query incidents with pagination: {str(e)}")
             raise DatabaseError(f"Failed to query incidents: {str(e)}", operation="get_incidents_paginated")
 
-    async def update_incident(self, incident_id: str, update_data: dict, updated_by: str) -> Incident:
-        """Update an existing incident"""
+    async def update_incident(self, incident_id: str, update_data: dict, updated_by: str, created_by: str) -> Incident:
+        """Update an existing incident - only if created by the same user"""
         try:
             # Convert string ID to integer for database query
             incident_id_int = int(incident_id)
-            LOGGER.debug(f"Updating incident {incident_id} (converted to int: {incident_id_int}) with data: {update_data}")
+            LOGGER.debug(f"Updating incident {incident_id} (converted to int: {incident_id_int}) with data: {update_data} for user: {created_by}")
 
             # Add updated_by to the update data
             update_data['updated_by'] = updated_by
 
-            # Execute update
+            # Execute update - only allow update if incident was created by the same user
             result = await self.db.execute(
                 update(Incident)
-                .where(and_(Incident.id == incident_id_int, Incident.is_deleted == False))
+                .where(and_(
+                    Incident.id == incident_id_int,
+                    Incident.is_deleted == False,
+                    Incident.created_by == created_by
+                ))
                 .values(**update_data)
                 .returning(Incident)
             )
@@ -125,8 +135,8 @@ class IncidentDataAccess:
             updated_incident = result.scalar_one_or_none()
 
             if not updated_incident:
-                LOGGER.warning(f"No incident found with ID: {incident_id}")
-                raise DatabaseError("Incident not found", operation="update_incident")
+                LOGGER.warning(f"No incident found with ID: {incident_id} for user: {created_by}")
+                raise DatabaseError("Incident not found or access denied", operation="update_incident")
 
             await self.db.commit()
             await self.db.refresh(updated_incident)
@@ -144,22 +154,26 @@ class IncidentDataAccess:
                 raise
             raise DatabaseError(f"Failed to update incident: {str(e)}", operation="update_incident")
 
-    async def soft_delete_incident(self, incident_id: str, deleted_by: str) -> bool:
-        """Soft delete an incident"""
+    async def soft_delete_incident(self, incident_id: str, deleted_by: str, created_by: str) -> bool:
+        """Soft delete an incident - only if created by the same user"""
         try:
             # Convert string ID to integer for database query
             incident_id_int = int(incident_id)
-            LOGGER.debug(f"Soft deleting incident: {incident_id} (converted to int: {incident_id_int})")
+            LOGGER.debug(f"Soft deleting incident: {incident_id} (converted to int: {incident_id_int}) for user: {created_by}")
 
-            # Execute soft delete
+            # Execute soft delete - only allow delete if incident was created by the same user
             result = await self.db.execute(
                 update(Incident)
-                .where(and_(Incident.id == incident_id_int, Incident.is_deleted == False))
+                .where(and_(
+                    Incident.id == incident_id_int,
+                    Incident.is_deleted == False,
+                    Incident.created_by == created_by
+                ))
                 .values(is_deleted=True, updated_by=deleted_by)
             )
 
             if result.rowcount == 0:
-                LOGGER.warning(f"No incident found with ID: {incident_id}")
+                LOGGER.warning(f"No incident found with ID: {incident_id} for user: {created_by}")
                 return False
 
             await self.db.commit()

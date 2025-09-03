@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import IncidentDetails from './IncidentDetails';
+import { useIncidentContext } from '../contexts/IncidentContext';
 
-const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
+const IncidentTable = () => {
+  const { incidents, loading, error, refreshIncidents, pagination } = useIncidentContext();
   const [selectedIncident, setSelectedIncident] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   // Format date for display
@@ -28,11 +30,7 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
 
         if (response.ok) {
           alert('Incident deleted successfully');
-          // Refresh the page to update the table
-          // soReact unmounts all components
-          // HomePage component mounts again
-          // useEffect in HomePage triggers
-          window.location.reload();
+          refreshIncidents(); // Refresh incidents using context
         } else {
           alert('Failed to delete incident');
         }
@@ -73,6 +71,34 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
     setSelectedIncident(null);
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="px-4 py-3">
+        <div className="text-center py-8">
+          <p className="text-[#617589]">Loading incidents...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="px-4 py-3">
+        <div className="text-center py-8">
+          <p className="text-red-600">{error}</p>
+          <button
+            onClick={refreshIncidents}
+            className="mt-4 px-4 py-2 bg-[#1172d4] text-white rounded-lg hover:bg-[#0d5bb5] transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Show empty state
   if (!incidents || incidents.length === 0) {
     return (
@@ -110,7 +136,7 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
           </thead>
           <tbody>
             {incidents.map((incident, index) => {
-              const sequentialNumber = (currentPage - 1) * pageSize + index + 1;
+              const sequentialNumber = (pagination.page - 1) * pagination.pageSize + index + 1;
               return (
                 <tr key={incident.id} className="border-t border-t-[#dbe0e6]">
                   <td className="h-[72px] px-4 py-2 text-[#111418] text-sm font-normal leading-normal">{sequentialNumber}</td>
@@ -178,7 +204,7 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
       {/* Mobile Card View */}
       <div className="lg:hidden space-y-4">
         {incidents.map((incident, index) => {
-          const sequentialNumber = (currentPage - 1) * pageSize + index + 1;
+          const sequentialNumber = (pagination.page - 1) * pagination.pageSize + index + 1;
           return (
             <div key={incident.id} className="bg-white border border-[#dbe0e6] rounded-lg p-4 shadow-sm">
               <div className="flex justify-between items-start mb-3">

@@ -31,7 +31,7 @@ const IncidentDetails = ({ incident, onClose }) => {
           <div className="flex flex-wrap gap-2 p-4">
             <a className="text-[#617589] text-base font-medium leading-normal" href="#">Incidents</a>
             <span className="text-[#617589] text-base font-medium leading-normal">/</span>
-            <span className="text-[#111418] text-base font-medium leading-normal">{incident.id}</span>
+            <span className="text-[#111418] text-base font-medium leading-normal">ID:{incident.id}</span>
           </div>
 
           <div className="flex flex-wrap justify-between gap-3 p-4">
