@@ -9,3 +9,16 @@ CREATE TABLE if not exists users (
     updated_by TEXT NOT NULL, 
     is_deleted BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE if not exists incident_tracker(
+id SERIAL PRIMARY KEY,
+title VARCHAR(200) NOT NULL,
+description TEXT,
+status VARCHAR(50) CHECK (status IN ('Open', 'In Progress', 'Resolved')) DEFAULT 'Open',
+priority VARCHAR(50) CHECK (priority IN ('Low', 'Medium', 'High')) DEFAULT 'Medium',
+created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+created_by TEXT NOT NULL,
+updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+updated_by TEXT NOT NULL, 
+is_deleted BOOLEAN DEFAULT FALSE
+);
