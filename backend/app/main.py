@@ -5,12 +5,16 @@ from fastapi.responses import FileResponse
 import os
 
 from api.api_handler import api_router
+from api.middleware.auth_middleware import auth_middleware
 from core import setup_logging, LOGGER, AppException
 
 # Setup logging
 setup_logging()
 
 app = FastAPI(title="Incident Tracker", version="1.0.0")
+
+# Add authentication middleware
+app.middleware("http")(auth_middleware)
 
 # Global exception handler. The exception handler is needed
 # here because, when an exception arises we need to safely log
