@@ -1,7 +1,13 @@
 .PHONY: build dev frontend backend clean
 
 # Build React app and start backend
-build:
+build dev:
+	cp ./deploy/.env.dev ./.env
+	cd ./frontend && npm run build
+	cd ./backend/app && uv run uvicorn main:app --reload --port 8001
+
+build prod:
+	cp ./deploy/.env.prod ./.env
 	cd ./frontend && npm run build
 	cd ./backend/app && uv run uvicorn main:app --reload --port 8001
 

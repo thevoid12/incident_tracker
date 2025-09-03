@@ -30,16 +30,24 @@ if not DATABASE_URL:
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
+# Read database configuration from environment
+db_echo = os.getenv("DB_ECHO", "false").lower() == "true"
+db_pool_size = int(os.getenv("DB_POOL_SIZE", "10"))
+db_max_overflow = int(os.getenv("DB_MAX_OVERFLOW", "20"))
+db_pool_timeout = int(os.getenv("DB_POOL_TIMEOUT", "30"))
+db_pool_recycle = int(os.getenv("DB_POOL_RECYCLE", "3600"))
+db_pool_pre_ping = os.getenv("DB_POOL_PRE_PING", "true").lower() == "true"
+
 # Create async engine with production settings
 engine = create_async_engine(
     DATABASE_URL,
-    echo=False,  # Set to True for development debugging
+    echo=db_echo,
     poolclass=AsyncAdaptedQueuePool,
-    pool_size=10,  # Connection pool size
-    max_overflow=20,  # Max overflow connections
-    pool_timeout=30,  # Connection timeout
-    pool_recycle=3600,  # Recycle connections after 1 hour
-    pool_pre_ping=True,  # Test connections before use
+    pool_size=db_pool_size,
+    max_overflow=db_max_overflow,
+    pool_timeout=db_pool_timeout,
+    pool_recycle=db_pool_recycle,
+    pool_pre_ping=db_pool_pre_ping,
 )
 
 # Create async session factory
