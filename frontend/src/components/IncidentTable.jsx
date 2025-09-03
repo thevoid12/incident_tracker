@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import IncidentDetails from './IncidentDetails';
 
 const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
+  const [selectedIncident, setSelectedIncident] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
   // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -38,6 +41,36 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
         alert('Error deleting incident');
       }
     }
+  };
+
+  // Handle expand incident details
+  const handleExpand = async (incidentId) => {
+    try {
+      const response = await fetch(`/api/incidents/${incidentId}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const incident = await response.json();
+        setSelectedIncident(incident);
+        setShowDetails(true);
+      } else {
+        alert('Failed to fetch incident details');
+      }
+    } catch (error) {
+      console.error('Error fetching incident details:', error);
+      alert('Error fetching incident details');
+    }
+  };
+
+  // Handle close details modal
+  const handleCloseDetails = () => {
+    setShowDetails(false);
+    setSelectedIncident(null);
   };
 
   // Show empty state
@@ -107,6 +140,15 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
                   <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
                     <div className="flex gap-2">
                       <button
+                        onClick={() => handleExpand(incident.id)}
+                        className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#f0f2f4] hover:bg-[#e5e7eb] transition-colors"
+                        title="View details"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256">
+                          <path d="M213.66,154.34l-80-80a8,8,0,0,1-11.32,0l-80,80A8,8,0,0,1,53.66,165.66L128,91.31l74.34,74.35a8,8,0,0,1,11.32-11.32Z"></path>
+                        </svg>
+                      </button>
+                      <button
                         onClick={() => window.location.href = `/edit?id=${incident.id}`}
                         className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#f0f2f4] hover:bg-[#e5e7eb] transition-colors"
                         title="Edit incident"
@@ -165,6 +207,16 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
 
             <div className="flex gap-2 mt-3">
               <button
+                onClick={() => handleExpand(incident.id)}
+                className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#f0f2f4] hover:bg-[#e5e7eb] transition-colors text-sm font-medium"
+                title="View details"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 256 256" className="mr-1">
+                  <path d="M213.66,154.34l-80-80a8,8,0,0,1-11.32,0l-80,80A8,8,0,0,1,53.66,165.66L128,91.31l74.34,74.35a8,8,0,0,1,11.32-11.32Z"></path>
+                </svg>
+                View
+              </button>
+              <button
                 onClick={() => window.location.href = `/edit?id=${incident.id}`}
                 className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#f0f2f4] hover:bg-[#e5e7eb] transition-colors text-sm font-medium"
                 title="Edit incident"
@@ -188,9 +240,17 @@ const IncidentTable = ({ incidents = [] , currentPage = 1, pageSize = 5 }) => {
           </div>
          );
        })}
-      </div>
-    </div>
-  );
+     </div>
+
+     {/* Incident Details Modal */}
+     {showDetails && (
+       <IncidentDetails
+         incident={selectedIncident}
+         onClose={handleCloseDetails}
+       />
+     )}
+   </div>
+ );
 };
 
 export default IncidentTable;

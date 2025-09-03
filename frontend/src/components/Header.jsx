@@ -10,7 +10,7 @@ const Header = () => {
 
   return (
     <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f0f2f4] px-4 md:px-10 py-3">
-      <div className="flex items-center gap-4 text-[#111418]">
+      <Link to="/home" className="flex items-center gap-4 text-[#111418] cursor-pointer hover:opacity-80 transition-opacity">
         <div className="size-4">
           <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -20,7 +20,7 @@ const Header = () => {
           </svg>
         </div>
         <h2 className="text-[#111418] text-lg font-bold leading-tight tracking-[-0.015em]">IncTra</h2>
-      </div>
+      </Link>
       <div className="flex flex-1 justify-end gap-4 md:gap-8 items-center">
         <label className="hidden md:flex flex-col min-w-40 !h-10 max-w-64">
           <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
@@ -35,8 +35,8 @@ const Header = () => {
             </div>
             <input
               placeholder="Search"
-              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111418] focus:outline-0 focus:ring-0 border-none bg-[#f0f2f4] focus:border-none h-full placeholder:text-[#617589] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
-              value=""
+              className="disable form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#111418] focus:outline-0 focus:ring-0 border-none bg-[#f0f2f4] focus:border-none h-full placeholder:text-[#617589] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
+              value="Disabled for now:)"
             />
           </div>
         </label>
