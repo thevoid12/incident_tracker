@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Simplified imports for Makefile compatibility
@@ -34,16 +34,12 @@ async def register_user(
     try:
         result = await service.register_user(request)
 
-        # Create JSON response with cookie
-        response = JSONResponse(content={
-            "message": result.message,
-            "user_id": result.user_id,
-            "email": result.email
-        })
-
+        # Create HTML redirect response with 303 See Other
+        response = RedirectResponse(url="/home", status_code=303)
+        
         # Set the authentication cookie
         auth_service.set_auth_cookie(response, result.token)
-
+        
         return response
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

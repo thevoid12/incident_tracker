@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse
 import os
 
 from api.api_handler import api_router
@@ -58,10 +59,27 @@ async def shutdown_event():
 app.include_router(api_router, tags=["api"])
 
 static_path = os.path.join(os.path.dirname(__file__), "../../frontend/dist")
-if os.path.exists(static_path):
-    app.mount("/", StaticFiles(directory=static_path, html=True), name="static")
-    LOGGER.info(f"Static files mounted from: {static_path}")
+assets_path = os.path.join(static_path, "assets")
+
+# Mount static assets directory for serving CSS, JS, etc.
+if os.path.exists(assets_path):
+    app.mount("/assets", StaticFiles(directory=assets_path), name="static")
+    LOGGER.info(f"Static assets mounted from: {assets_path}")
 else:
-    LOGGER.warning(f"Static files directory not found: {static_path}")
+    LOGGER.warning(f"Static assets directory not found: {assets_path}")
 
 
+# if FastAPI doesn’t recognize /abc as an API route or static asset, it falls back to index.html.
+# That means the browser loads index.html, React initializes, React Router sees /abc
+# in the browser URL, and renders the correct page.
+@app.get("/{full_path:path}")
+async def spa_fallback(request: Request):
+    """
+    Catch-all route to serve React's index.html
+    for any unknown path.
+    Lets React Router handle client-side routing.
+    """
+    index_file = os.path.join(static_path, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    return JSONResponse(status_code=404, content={"error": "Frontend not built"})
