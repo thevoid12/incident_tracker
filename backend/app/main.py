@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 
 import os
 
-from api.api_handler import router as api_router
+from api.api_handler import api_router
 
 app = FastAPI(title="Incident Tracker", version="1.0.0")
 
