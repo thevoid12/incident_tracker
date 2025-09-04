@@ -1,6 +1,6 @@
 function Footer(){
   return (
-    <footer className="absolute bottom-6 text-center text-gray-500 text-sm">
+    <footer className="mt-auto text-center text-gray-500 text-sm py-4 px-4">
       <p>© 2025 void's incident tracker</p>
     </footer>
   );

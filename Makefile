@@ -4,7 +4,8 @@
 build-dev:
 	cp ./deploy/.env.dev ./.env
 	cd ./frontend && npm run build
-	cd ./backend/app && uv run uvicorn main:app --reload --port 8001
+	cd ./backend/app && uv run uvicorn main:app --reload --port 8001 &
+	cd ./frontend && npx serve dist -p 8081 -s
 
 build-prod:
 	cp ./deploy/.env.prod ./.env

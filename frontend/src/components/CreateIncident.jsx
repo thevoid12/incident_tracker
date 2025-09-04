@@ -204,10 +204,9 @@ const CreateIncident = () => {
                 </button>
               </div>
             </form>
-
-            <Footer />
           </div>
         </div>
+        <Footer />
       </div>
     </div>
   );
