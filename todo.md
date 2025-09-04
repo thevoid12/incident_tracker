@@ -1,15 +1,69 @@
-# my todo list 
-- [x]  fast api
-  - [x] decorators
-  - [x] pydantic
-- [ ]  jwt is stolen
-- [ ]  cors setup
-- [ ]  change env of docker compose file
-- [x]  logging and error handling
-- [ ]  handle ui error display dont display too much details
-- [x]  middleware
-- [x]  when logging out cookies need to be cleared
-- [ ]  need to clarify: why all filtering needs to be in ui
-- [ ]  limit shouldnt be 100. make it configurable somewhere
-- [ ]  pytest
-- [ ]  rbac
+# Task: Incident Tracker Application
+
+## Problem Statement
+-  Design and implement a Full-Stack Incident Tracker that allows users to log, view, and update incidents reported within a company.
+
+## Frontend (React)
+-  Build a single-page React application with the following pages:
+
+     - [x] Incident List Page
+    - [x] Shows all incidents with pagination.
+    - [x] Filtering by status (`Open`, `In Progress`, `Resolved`).
+    - [x] Sorting by creation date.
+
+     - [x] Incident Detail Page
+    - [x] Displays all fields of an incident.
+    - [x] Allows editing of incident details.
+
+     - [x] Create Incident Page
+    - [x] Form to add a new incident.
+    - [x] Validate required fields before submission.
+
+    - [x] Use state management (React Context or Redux) for handling filters and session state.
+   - [x] Implement a responsive layout (desktop & mobile).
+
+---
+
+## Backend (Python API)
+  Use FastAPI or Flask to build a REST API with the following endpoints:
+
+  - [x] `POST /incidents` → create a new incident
+  - [x] `GET /incidents` → list incidents with filtering & pagination support
+  - [x] `GET /incidents/{id}` → fetch details of a single incident
+  - [x] `PUT /incidents/{id}` → update an existing incident
+  - [x] `DELETE /incidents/{id}` → delete an incident (soft delete)
+
+- [x] Add basic authentication (username/password) for API access.
+- [x] Include error handling and proper HTTP status codes.
+- [x] Write at least one unit test for the backend API.
+
+---
+
+## Database (PostgreSQL)
+- [x] Design a table `incidents` with at least these fields:
+    `id SERIAL PRIMARY KEY`
+
+    `title VARCHAR(200) NOT NULL`
+
+    `description TEXT`
+
+    `status VARCHAR(50) CHECK (status IN ('Open', 'In Progress', 'Resolved')) DEFAULT 'Open'`
+
+    `priority VARCHAR(50) CHECK (priority IN ('Low', 'Medium', 'High')) DEFAULT 'Medium'`
+
+    `created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`
+    `updated_at TIMESTAMP`
+
+- [x] Ensure indexes for `status` and `created_at` to optimize queries.
+
+---
+
+## Bonus Points (Optional)
+- [ ] Add role-based access control:
+  - [ ] Admin: can create, update, delete incidents.
+  - [ ] User: can only create and view.
+
+- [ ] Add a search box on the frontend to filter incidents by keyword in title/description.
+- [x] Containerize with Docker (frontend, backend, DB).
+- [x] Write a short README with setup instructions.
+
