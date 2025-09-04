@@ -29,20 +29,8 @@ frontend:
 backend:
 	cd ./backend/app && uv run uvicorn main:app --reload --port 8001
 
-# Clean build artifacts
-clean:
-	rm -rf ./frontend/dist
-	rm -rf ./backend/app/__pycache__
-	rm -rf ./backend/app/**/*.pyc
-
 # Setup development environment
 setup:
 	cd ./frontend && npm install
 	cd ./backend && uv sync
 
-# Full development workflow
-full-dev:
-	@echo "Setting up development environment..."
-	make setup
-	@echo "Starting all services..."
-	make dev
