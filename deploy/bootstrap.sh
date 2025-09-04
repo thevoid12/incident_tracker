@@ -11,58 +11,52 @@ NGINX_CONF_PATH="/etc/nginx/nginx.conf"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# setting up prod config
-echo "setting up prod config"
-cp env.prod ../.env
+# --- Set up prod config ---
+echo "Setting up prod config..."
+cp "$SCRIPT_DIR/.env.prod" "$PROJECT_ROOT/.env"
 
 # --- Install Docker if not present ---
 if ! command -v docker &> /dev/null; then
     echo "Installing Docker..."
-    if grep -q "Amazon Linux release 2" /etc/system-release; then
-        # Amazon Linux 2
-        sudo yum update -y
-        sudo amazon-linux-extras install docker -y
-    else
-        # Amazon Linux 2023
-        sudo dnf update -y
-        sudo dnf install -y docker
-    fi
+    sudo apt-get update -y
+    sudo apt-get install -y ca-certificates curl gnupg lsb-release
+
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+      https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+      | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    sudo apt-get update -y
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     sudo systemctl enable --now docker
 fi
 echo "Docker version: $(docker --version)"
 
-# --- Install Docker Compose standalone binary if missing ---
+# --- Install Docker Compose standalone if missing ---
 if ! command -v docker-compose &> /dev/null; then
-    echo "Installing Docker Compose..."
+    echo "Installing Docker Compose standalone..."
     sudo curl -SL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
         -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
 fi
-echo "Docker Compose version: $(docker-compose version --short)"
+echo "Docker Compose version: $(docker-compose version --short || docker compose version --short)"
 
 # --- Start application stack ---
 echo "Starting docker-compose services..."
-sudo docker-compose -f "$SCRIPT_DIR/prod-docker-compose.yml" up -d --build
+sudo docker compose -f "$SCRIPT_DIR/prod-docker-compose.yml" up -d --build
 
 # --- Install nginx if not present ---
 if ! command -v nginx &> /dev/null; then
     echo "Installing nginx..."
-    if grep -q "Amazon Linux release 2" /etc/system-release; then
-        sudo amazon-linux-extras enable nginx1 -y || true
-        sudo yum install -y nginx
-    else
-        sudo dnf install -y nginx
-    fi
+    sudo apt-get install -y nginx
 fi
 
-# --- Install certbot from system repos (no snap) ---
+# --- Install certbot ---
 if ! command -v certbot &> /dev/null; then
     echo "Installing certbot..."
-    if grep -q "Amazon Linux release 2" /etc/system-release; then
-        sudo yum install -y certbot python2-certbot-nginx
-    else
-        sudo dnf install -y certbot python3-certbot-nginx
-    fi
+    sudo apt-get install -y certbot python3-certbot-nginx
 fi
 
 # --- Issue/renew certificates ---
