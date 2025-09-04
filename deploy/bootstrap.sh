@@ -11,6 +11,10 @@ NGINX_CONF_PATH="/etc/nginx/nginx.conf"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# setting up prod config
+echo "setting up prod config"
+cp env.prod ../.env
+
 # --- Install Docker if not present ---
 if ! command -v docker &> /dev/null; then
     echo "Installing Docker..."
