@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15
@@ -20,23 +18,22 @@ services:
   backend:
     build:
       context: ..
-      dockerfile: ../deploy/Dockerfile.backend
+      dockerfile: ./deploy/Dockerfile.backend
     container_name: inctra_backend_prod
     env_file:
-      - ../.env.prod
+      - ../.env
     ports:
       - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
-    # For production, don’t bind mount code
-    # volumes:
-    #   - ../backend:/app
+    volumes:
+      - ../backend/app/logs:/app/app/logs
 
   frontend:
     build:
       context: ..
-      dockerfile: ../deploy/Dockerfile.frontend
+      dockerfile: ./deploy/Dockerfile.frontend
     container_name: inctra_frontend_prod
     ports:
       - "8080:80"
@@ -45,3 +42,4 @@ services:
 
 volumes:
   postgres_data:
+

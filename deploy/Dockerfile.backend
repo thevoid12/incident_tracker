@@ -1,40 +1,27 @@
-# ===== Stage 1: Build dependencies =====
+# ===== Stage 1: Install uv and dependencies =====
 FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
-# Install system dependencies (needed for psycopg2, Pillow, etc.)
+ENV PYTHONPATH=/app/app
+
+# Install system deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential gcc libpq-dev \
+    build-essential gcc libpq-dev curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first (better layer caching)
-COPY ../backend/requirements.txt .
+# Install uv
+RUN pip install --user uv
 
-# Install dependencies
-RUN pip install --user --no-cache-dir -r requirements.txt
-
-
-# ===== Stage 2: Final runtime =====
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install only runtime libs
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy installed packages from builder
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
-
-# Copy application code
+# Copy your project files
 COPY ../backend /app
 
 # Expose port
 EXPOSE 8000
 
-# Run Uvicorn with multiple workers for production
-# (adjust workers based on CPU cores)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+# Set PATH for uv
+ENV PATH=/root/.local/bin:$PATH
+
+# Run your backend via uv
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
