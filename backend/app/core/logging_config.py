@@ -7,6 +7,7 @@ import sys
 import logging
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
+import os
 
 # Create logs directory if it doesn't exist
 logs_dir = Path(__file__).parent.parent / "logs"
@@ -21,8 +22,21 @@ console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(logging.Formatter(LOG_FORMAT, DATE_FORMAT))
 
+# Custom rotating file handler that recreates file if deleted during runtime
+class CustomRotatingFileHandler(RotatingFileHandler):
+    def emit(self, record):
+        # Check if the log file exists, if not, recreate it
+        if not os.path.exists(self.baseFilename):
+            # Close current stream if open
+            if self.stream:
+                self.stream.close()
+                self.stream = None
+            # Reopen will create the file
+            self._open()
+        super().emit(record)
+
 # Rotating file handler for all logs
-file_handler = RotatingFileHandler(
+file_handler = CustomRotatingFileHandler(
     logs_dir / "app.log",
     maxBytes=10 * 1024 * 1024,  # 10 MB
     backupCount=5,
