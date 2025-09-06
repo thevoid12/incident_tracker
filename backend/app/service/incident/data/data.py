@@ -82,14 +82,14 @@ class IncidentDataAccess:
             LOGGER.error(f"Failed to query incident by ID {incident_id}: {str(e)}")
             raise DatabaseError(f"Failed to query incident: {str(e)}", operation="get_incident_by_id")
 
-    async def get_incidents_paginated(self, limit: int, offset: int, created_by: str) -> tuple[list[Incident], int]:
-        """Get incidents with pagination filtered by created_by"""
+    async def list_incidents_paginated(self, limit: int, offset: int, emailID: str) -> tuple[list[Incident], int]:
+        """List incidents with pagination filtered by created_by and assigned to"""
         try:
-            LOGGER.debug(f"Querying incidents with pagination: limit={limit}, offset={offset} for user: {created_by}")
+            LOGGER.debug(f"Querying incidents with pagination: limit={limit}, offset={offset} for user: {emailID}")
 
             # Build base query - exclude deleted incidents and filter by created_by
             query = select(Incident).where(
-                and_(Incident.is_deleted == False, Incident.created_by == created_by)
+                and_(Incident.is_deleted == False,or_(Incident.created_by == emailID,Incident.assigned_to==emailID))
             )
 
             # Get total count of non-deleted incidents for this user
@@ -104,7 +104,7 @@ class IncidentDataAccess:
             result = await self.db.execute(query)
             incidents = result.scalars().all()
 
-            LOGGER.debug(f"Found {len(incidents)} incidents out of {total_count} total for user: {created_by}")
+            LOGGER.debug(f"Found {len(incidents)} incidents out of {total_count} total for user: {emailID}")
             return incidents, total_count
 
         except Exception as e:

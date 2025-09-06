@@ -94,7 +94,7 @@ class IncidentService:
         LOGGER.info(f"Processing incident list request with pagination: limit={limit}, offset={offset} for user: {created_by}")
 
         try:
-            incidents, total_count = await self.incident_data.get_incidents_paginated(limit, offset, created_by)
+            incidents, total_count = await self.incident_data.list_incidents_paginated(limit, offset, created_by)
 
             # Calculate total pages
             total_pages = (total_count + limit - 1) // limit
