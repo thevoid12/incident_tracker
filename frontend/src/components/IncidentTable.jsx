@@ -120,7 +120,7 @@ const IncidentTable = () => {
   return (
     <div className="px-4 py-3">
       {/* Desktop Table View */}
-      <div className="hidden lg:flex overflow-hidden rounded-lg border border-[#dbe0e6] bg-white">
+      <div className="hidden lg:flex rounded-lg border border-[#dbe0e6] bg-white">
         <table className="flex-1">
           <thead>
             <tr className="bg-white">

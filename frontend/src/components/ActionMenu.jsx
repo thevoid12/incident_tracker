@@ -1,9 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 
+
 const ActionMenu = ({ actions, triggerClassName = "flex items-center justify-center w-8 h-8 rounded bg-[#f0f2f4] hover:bg-[#e5e7eb] transition-colors" }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState('below');
+  const buttonRef = useRef(null);
 
   const toggleMenu = () => {
+    if (!isOpen && buttonRef.current) {
+      // Check available space for smart positioning
+      const rect = buttonRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const menuHeight = actions.length * 48 + 16; // Approximate menu height
+
+      // Position above if not enough space below, otherwise below
+      setPosition(spaceBelow >= menuHeight ? 'below' : 'above');
+    }
     setIsOpen(!isOpen);
   };
 
@@ -16,6 +29,7 @@ const ActionMenu = ({ actions, triggerClassName = "flex items-center justify-cen
     <div className="relative">
       {/* Trigger Button */}
       <button
+        ref={buttonRef}
         onClick={toggleMenu}
         className={triggerClassName}
         title="Actions"
@@ -35,7 +49,9 @@ const ActionMenu = ({ actions, triggerClassName = "flex items-center justify-cen
           />
 
           {/* Menu */}
-          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-[#dbe0e6] rounded-lg shadow-lg z-20 md:w-48 w-40">
+          <div className={`absolute right-0 w-48 bg-white border border-[#dbe0e6] rounded-lg shadow-lg z-[9999] md:w-48 w-36 ${
+            position === 'below' ? 'top-full mt-1' : 'bottom-full mb-1'
+          }`}>
             <div className="py-1">
               {actions.map((action, index) => (
                 <button
