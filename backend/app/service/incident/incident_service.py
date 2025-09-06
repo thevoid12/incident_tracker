@@ -170,7 +170,7 @@ class IncidentService:
                 incident_id=incident_id,
                 update_data=update_data,
                 updated_by=updated_by,
-                created_by=created_by
+                emailID=created_by
             )
 
             LOGGER.info(f"Incident updated successfully: {incident_id}")
