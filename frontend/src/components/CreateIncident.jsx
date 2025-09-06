@@ -93,6 +93,7 @@ const CreateIncident = () => {
     }));
   };
 
+
   return (
     <div className="relative flex size-full min-h-screen flex-col bg-white group/design-root overflow-x-hidden" style={{fontFamily: 'Inter, "Noto Sans", sans-serif'}}>
       <div className="layout-container flex h-full grow flex-col">
@@ -119,13 +120,16 @@ const CreateIncident = () => {
                 const url = isEditing ? `/api/incidents/${incidentId}` : '/api/incidents';
 
                 try {
+                  // Prepare form data
+                  let submitData = { ...formData };
+
                   const response = await fetch(url, {
                     method: method,
                     credentials: 'include',
                     headers: {
                       'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams(formData).toString(),
+                    body: new URLSearchParams(submitData).toString(),
                   });
 
                   if (response.ok) {
@@ -181,6 +185,7 @@ const CreateIncident = () => {
                   />
                 </label>
               </div>
+
 
               {/* Status Field */}
               <div className="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">

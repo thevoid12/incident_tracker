@@ -17,10 +17,11 @@ description TEXT,
 status VARCHAR(50) CHECK (status IN ('Open', 'In Progress', 'Resolved')) DEFAULT 'Open',
 priority VARCHAR(50) CHECK (priority IN ('Low', 'Medium', 'High')) DEFAULT 'Medium',
 assigned_to TEXT NOT NULL,
+chat JSONB DEFAULT '[]'::jsonb,
 created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 created_by TEXT NOT NULL,
 updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-updated_by TEXT NOT NULL, 
+updated_by TEXT NOT NULL,
 is_deleted BOOLEAN DEFAULT FALSE
 );
 

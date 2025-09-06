@@ -7,8 +7,9 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete, func, and_, or_
 from core import LOGGER, DatabaseError
+from datetime import datetime,timezone
 from service.db.models.incident_model import Incident
-
+from sqlalchemy.orm.attributes import flag_modified
 
 class IncidentDataAccess:
     """Data access class for incident operations"""
@@ -188,3 +189,60 @@ class IncidentDataAccess:
             LOGGER.error(f"Failed to soft delete incident {incident_id}: {str(e)}")
             await self.db.rollback()
             raise DatabaseError(f"Failed to delete incident: {str(e)}", operation="soft_delete_incident")
+
+    async def add_chat_message(self, incident_id: str, user_email: str, content: str, emailID: str) -> Incident:
+        """Add a message to the incident's chat"""
+        try:
+            
+            incident_id_int = int(incident_id)
+            LOGGER.debug(f"Adding chat message to incident {incident_id} by user: {user_email}")
+
+            # Get current incident
+            result = await self.db.execute(
+                select(Incident).where(
+                    and_(
+                        Incident.id == incident_id_int,
+                        Incident.is_deleted == False,
+                        or_(Incident.created_by == emailID, Incident.assigned_to == emailID)
+                    )
+                )
+            )
+            incident = result.scalar_one_or_none()
+
+            if not incident:
+                LOGGER.warning(f"No incident found with ID: {incident_id} for user: {emailID}")
+                raise DatabaseError("Incident not found or access denied", operation="add_chat_message")
+
+            # Initialize chat if None
+            if incident.chat is None:
+                incident.chat = []
+
+            # Add new message
+            new_message = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "useremail": user_email,
+                "content": content
+            }
+            incident.chat.append(new_message)
+
+            # Mark the chat field as modified for SQLAlchemy
+           
+            # SQLAlchemy Issue: When you modify nested data in a JSON field, SQLAlchemy doesn't automatically detect the change
+            # Without flag_modified: The commit happens but the JSON field isn't updated in the database
+            # With flag_modified: SQLAlchemy knows the field changed and properly saves it
+            flag_modified(incident, 'chat')
+
+            # Update the incident
+            await self.db.commit()
+            await self.db.refresh(incident)
+
+            LOGGER.info(f"Chat message added to incident: {incident_id}")
+            return incident
+
+        except ValueError as e:
+            LOGGER.error(f"Invalid incident ID format: {incident_id}")
+            raise DatabaseError(f"Invalid incident ID format: {incident_id}", operation="add_chat_message")
+        except Exception as e:
+            LOGGER.error(f"Failed to add chat message to incident {incident_id}: {str(e)}")
+            await self.db.rollback()
+            raise DatabaseError(f"Failed to add chat message: {str(e)}", operation="add_chat_message")

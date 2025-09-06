@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 from service.incident.incident_service import IncidentService
 from service.incident.model import (
     CreateIncidentRequest, UpdateIncidentRequest, IncidentResponse,
-    IncidentListResponse
+    IncidentListResponse, AddChatMessageRequest
 )
 from service.db import get_db
 from service.auth.auth import get_current_user
@@ -41,6 +41,22 @@ async def list_incidents(
     try:
         return await service.list_incidents(current_user["email"], limit=limit, offset=offset)
     except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/incidents/{id}/chat", response_model=IncidentResponse)
+async def add_chat_message(
+    id: str,
+    request: AddChatMessageRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Add a chat message to an incident"""
+    service = IncidentService(db)
+    try:
+        return await service.add_chat_message(id, request.content, current_user["email"], current_user["email"])
+    except Exception as e:
+        if "not found" in str(e).lower():
+            raise HTTPException(status_code=404, detail=str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/incidents/{id}", response_model=IncidentResponse)

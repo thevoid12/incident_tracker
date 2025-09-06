@@ -11,3 +11,7 @@ SET assigned_to = created_by;
 -- Step 3: Set NOT NULL constraint
 ALTER TABLE incident_tracker
 ALTER COLUMN assigned_to SET NOT NULL;
+
+-- adding a new column for chat
+ALTER TABLE incident_tracker
+ADD COLUMN chat JSONB DEFAULT '[]'::jsonb;

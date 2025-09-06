@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Chat from './Chat';
 
-const IncidentDetails = ({ incident, onClose }) => {
+const IncidentDetails = ({ incident: initialIncident, onClose }) => {
+  const [incident, setIncident] = useState(initialIncident);
+  const [loading, setLoading] = useState(false);
+
   if (!incident) return null;
 
   const formatDate = (dateString) => {
@@ -12,6 +16,41 @@ const IncidentDetails = ({ incident, onClose }) => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleAddChatMessage = async (content) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/incidents/${incident.id}/chat`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+      });
+
+      if (response.ok) {
+        const updatedIncident = await response.json();
+        setIncident(updatedIncident);
+      } else if (response.status === 401) {
+        alert('Session expired. Please log in again.');
+        window.location.href = '/login';
+      } else {
+        alert('Failed to add message');
+      }
+    } catch (error) {
+      console.error('Error adding chat message:', error);
+      alert('Error adding message');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get current user email (you might need to implement this based on your auth system)
+  const getCurrentUserEmail = () => {
+    // This should come from your authentication context or state
+    return 'current.user@example.com';
   };
 
   return (
@@ -75,6 +114,15 @@ const IncidentDetails = ({ incident, onClose }) => {
           <p className="text-[#111418] text-base font-normal leading-normal pb-3 pt-1 px-4">
             {incident.description || 'No description provided.'}
           </p>
+
+          {/* Chat Section */}
+          <div className="px-4 pb-4">
+            <Chat
+              messages={incident.chat || []}
+              onAddMessage={handleAddChatMessage}
+              currentUserEmail={getCurrentUserEmail()}
+            />
+          </div>
 
           <div className="flex px-4 py-3 justify-end">
             <button

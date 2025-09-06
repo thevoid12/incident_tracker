@@ -4,6 +4,7 @@ Contains business logic for incident operations with proper logging and error ha
 """
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
 from core import LOGGER, ValidationError, NotFoundError, DatabaseError
 from .data.data import IncidentDataAccess
 from .model import (
@@ -48,6 +49,7 @@ class IncidentService:
                 created_by=incident.created_by,
                 updated_on=incident.updated_on,
                 updated_by=incident.updated_by,
+                chat=incident.chat or [],
                 is_deleted=incident.is_deleted
             )
 
@@ -80,6 +82,7 @@ class IncidentService:
                 created_by=incident.created_by,
                 updated_on=incident.updated_on,
                 updated_by=incident.updated_by,
+                chat=incident.chat or [],
                 is_deleted=incident.is_deleted
             )
 
@@ -113,6 +116,7 @@ class IncidentService:
                     created_by=incident.created_by,
                     updated_on=incident.updated_on,
                     updated_by=incident.updated_by,
+                    chat=incident.chat or [],
                     is_deleted=incident.is_deleted
                 ))
 
@@ -186,6 +190,7 @@ class IncidentService:
                 created_by=updated_incident.created_by,
                 updated_on=updated_incident.updated_on,
                 updated_by=updated_incident.updated_by,
+                chat=updated_incident.chat or [],
                 is_deleted=updated_incident.is_deleted
             )
 
@@ -225,3 +230,63 @@ class IncidentService:
             if isinstance(e, (NotFoundError, DatabaseError)):
                 raise
             raise DatabaseError(f"Incident deletion failed: {str(e)}", operation="delete_incident")
+
+    async def add_chat_message(self, incident_id: str, content: str, user_email: str, created_by: str) -> IncidentResponse:
+        """Add a message to the incident's chat"""
+        LOGGER.info(f"Processing chat message addition for incident ID: {incident_id} by user: {user_email}")
+
+        try:
+            # Add message through data layer
+            incident = await self.incident_data.add_chat_message(
+                incident_id=incident_id,
+                user_email=user_email,
+                content=content,
+                emailID=created_by
+            )
+
+            LOGGER.info(f"Chat message added successfully to incident: {incident_id}")
+
+            # Return response
+            return IncidentResponse(
+                id=str(incident.id),
+                title=incident.title,
+                description=incident.description,
+                status=incident.status,
+                priority=incident.priority,
+                assigned_to=incident.assigned_to,
+                created_on=incident.created_on,
+                created_by=incident.created_by,
+                updated_on=incident.updated_on,
+                updated_by=incident.updated_by,
+                chat=incident.chat or [],
+                is_deleted=incident.is_deleted
+            )
+
+        except Exception as e:
+            LOGGER.error(f"Chat message addition failed for incident {incident_id}: {str(e)}")
+            if isinstance(e, (ValidationError, DatabaseError)):
+                raise
+            raise DatabaseError(f"Chat message addition failed: {str(e)}", operation="add_chat_message")
+
+    async def get_chat(self, incident_id: str, created_by: str) -> List[dict]:
+        """Get the chat for an incident in time series order"""
+        LOGGER.info(f"Processing chat retrieval for incident ID: {incident_id} by user: {created_by}")
+
+        try:
+            incident = await self.incident_data.get_incident_by_id(incident_id, created_by)
+            if not incident:
+                LOGGER.warning(f"Incident not found: {incident_id} for user: {created_by}")
+                raise NotFoundError("Incident not found", resource="incident")
+
+            chat = incident.chat or []
+            # Sort by timestamp to ensure time series order
+            chat_sorted = sorted(chat, key=lambda x: x.get('timestamp', ''))
+
+            LOGGER.debug(f"Chat retrieved successfully for incident: {incident_id}")
+            return chat_sorted
+
+        except Exception as e:
+            LOGGER.error(f"Chat retrieval failed for incident {incident_id}: {str(e)}")
+            if isinstance(e, (NotFoundError, DatabaseError)):
+                raise
+            raise DatabaseError(f"Chat retrieval failed: {str(e)}", operation="get_chat")

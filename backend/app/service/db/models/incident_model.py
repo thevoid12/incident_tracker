@@ -3,7 +3,7 @@ SQLAlchemy ORM models for incidents.
 Uses the existing incident_tracker table schema.
 """
 
-from sqlalchemy import Column, String, Text, TIMESTAMP, Integer, Boolean
+from sqlalchemy import Column, String, Text, TIMESTAMP, Integer, Boolean, JSON
 from .base import Base
 
 
@@ -19,6 +19,7 @@ class Incident(Base):
     status = Column(String(50), default="Open", nullable=False)
     priority = Column(String(50), default="Medium", nullable=False)
     assigned_to = Column(String, nullable=False)
+    chat = Column(JSON, default=[])
     created_on = Column(TIMESTAMP, nullable=False, server_default='CURRENT_TIMESTAMP')
     created_by = Column(String, nullable=False)
     updated_on = Column(TIMESTAMP, nullable=False, server_default='CURRENT_TIMESTAMP')

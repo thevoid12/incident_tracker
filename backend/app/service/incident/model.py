@@ -102,6 +102,7 @@ class IncidentResponse(BaseModel):
     created_by: str
     updated_on: datetime
     updated_by: str
+    chat: List[dict] = Field(default_factory=list)
     is_deleted: bool
 
 
@@ -121,3 +122,8 @@ class IncidentFilterRequest(BaseModel):
     search: Optional[str] = None  # Search in title and description
     limit: int = Field(5, ge=1, le=100)
     offset: int = Field(0, ge=0)
+
+
+class AddChatMessageRequest(BaseModel):
+    """Request model for adding a chat message"""
+    content: str = Field(..., min_length=1, max_length=1000)  # Message content

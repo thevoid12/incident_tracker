@@ -140,6 +140,9 @@ const IncidentTable = () => {
                 Assigned To
               </th>
               <th className="px-2 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-16">
+                Chat
+              </th>
+              <th className="px-2 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-16">
                 Actions
               </th>
             </tr>
@@ -177,6 +180,9 @@ const IncidentTable = () => {
                   </td>
                   <td className="h-[72px] px-2 py-2 text-[#617589] text-sm font-normal leading-normal truncate" title={incident.assigned_to}>
                     {incident.assigned_to}
+                  </td>
+                  <td className="h-[72px] px-2 py-2 text-[#617589] text-sm font-normal leading-normal">
+                    {(incident.chat || []).length}
                   </td>
                   <td className="h-[72px] px-2 py-2 text-sm font-normal leading-normal">
                     <ActionMenu
@@ -283,6 +289,9 @@ const IncidentTable = () => {
               </p>
               <p className="text-[#617589] text-sm">
                 <span className="font-medium text-[#111418]">Assigned to:</span> {incident.assigned_to}
+              </p>
+              <p className="text-[#617589] text-sm">
+                <span className="font-medium text-[#111418]">Chat messages:</span> {(incident.chat || []).length}
               </p>
             </div>
 
