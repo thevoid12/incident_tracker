@@ -1,28 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 
 const ActionMenu = ({ actions, triggerClassName = "flex items-center justify-center w-8 h-8 rounded bg-[#f0f2f4] hover:bg-[#e5e7eb] transition-colors" }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-  const buttonRef = useRef(null);
 
   const toggleMenu = () => {
-    if (!isOpen && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      const menuHeight = actions.length * 40 + 16;
-
-      let top = rect.bottom + window.scrollY;
-      if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
-        top = rect.top + window.scrollY - menuHeight;
-      }
-
-      setMenuPosition({
-        top: top,
-        left: rect.right + window.scrollX - 192 // 192px = w-48 (12rem)
-      });
-    }
     setIsOpen(!isOpen);
   };
 
@@ -35,7 +16,6 @@ const ActionMenu = ({ actions, triggerClassName = "flex items-center justify-cen
     <div className="relative">
       {/* Trigger Button */}
       <button
-        ref={buttonRef}
         onClick={toggleMenu}
         className={triggerClassName}
         title="Actions"
@@ -46,28 +26,22 @@ const ActionMenu = ({ actions, triggerClassName = "flex items-center justify-cen
       </button>
 
       {/* Dropdown Menu */}
-      {isOpen && createPortal(
+      {isOpen && (
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-[9998]"
+            className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
 
           {/* Menu */}
-          <div
-            className="fixed w-48 bg-white border border-[#dbe0e6] rounded-lg shadow-lg z-[9999]"
-            style={{
-              top: `${menuPosition.top}px`,
-              left: `${menuPosition.left}px`
-            }}
-          >
+          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-[#dbe0e6] rounded-lg shadow-lg z-20 md:w-48 w-40">
             <div className="py-1">
               {actions.map((action, index) => (
                 <button
                   key={index}
                   onClick={() => handleAction(action)}
-                  className={`flex items-center w-full px-4 py-2 text-sm hover:bg-[#f0f2f4] transition-colors ${
+                  className={`flex items-center w-full px-4 py-3 text-sm hover:bg-[#f0f2f4] transition-colors ${
                     action.danger ? 'text-[#dc2626] hover:bg-[#fee2e2]' : 'text-[#111418]'
                   }`}
                 >
@@ -77,8 +51,7 @@ const ActionMenu = ({ actions, triggerClassName = "flex items-center justify-cen
               ))}
             </div>
           </div>
-        </>,
-        document.body
+        </>
       )}
     </div>
   );
