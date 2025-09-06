@@ -15,3 +15,17 @@ ALTER COLUMN assigned_to SET NOT NULL;
 -- adding a new column for chat
 ALTER TABLE incident_tracker
 ADD COLUMN chat JSONB DEFAULT '[]'::jsonb;
+
+-- creating a new table called audittrail
+CREATE TABLE IF NOT exists audit_trail (
+id TEXT PRIMARY KEY,
+user_action TEXT NOT NULL,
+description TEXT,
+email TEXT NOT NULL,
+created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+created_by TEXT NOT NULL,
+updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+updated_by TEXT NOT NULL,
+is_deleted BOOLEAN DEFAULT FALSE
+);
+

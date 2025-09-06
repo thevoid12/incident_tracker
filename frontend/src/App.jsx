@@ -3,6 +3,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import HomePage from './components/HomePage';
 import CreateIncident from './components/CreateIncident';
+import AuditTrail from './components/AuditTrail';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/home" element={<HomePage />} />
         <Route path="/new" element={<CreateIncident />} />
         <Route path="/edit" element={<CreateIncident />} />
+        <Route path="/audittrail" element={<AuditTrail />} />
       </Routes>
     </Router>
   );

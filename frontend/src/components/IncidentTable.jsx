@@ -120,14 +120,14 @@ const IncidentTable = () => {
   return (
     <div className="px-4 py-3">
       {/* Desktop Table View */}
-      <div className="hidden lg:flex rounded-lg border border-[#dbe0e6] bg-white">
+      <div className="hidden lg:flex rounded-lg border border-[#dbe0e6] bg-white overflow-hidden">
         <table className="flex-1">
           <thead>
             <tr className="bg-white">
               <th className="px-2 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-16">
                 #
               </th>
-              <th className="px-2 py-3 text-left text-[#111418] text-sm font-medium leading-normal min-w-[120px] max-w-[180px]">Subject</th>
+              <th className="px-2 py-3 text-left text-[#111418] text-sm font-medium leading-normal min-w-[70px] max-w-[85px]">Subject</th>
               <th className="px-2 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-20">Status</th>
               <th className="px-2 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-20">Priority</th>
               <th className="px-2 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-24">
@@ -153,7 +153,7 @@ const IncidentTable = () => {
               return (
                 <tr key={incident.id} className="border-t border-t-[#dbe0e6]">
                   <td className="h-[72px] px-2 py-2 text-[#111418] text-sm font-normal leading-normal">{sequentialNumber}</td>
-                  <td className="h-[72px] px-2 py-2 text-[#617589] text-sm font-normal leading-normal min-w-[120px] max-w-[180px]">
+                  <td className="h-[72px] px-2 py-2 text-[#617589] text-sm font-normal leading-normal min-w-[70px] max-w-[85px]">
                     <div className="truncate" title={incident.title}>
                       {incident.title}
                     </div>

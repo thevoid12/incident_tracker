@@ -28,3 +28,16 @@ is_deleted BOOLEAN DEFAULT FALSE
 CREATE INDEX if not exists idx_incident_tracker_status ON incident_tracker(status);
 
 CREATE INDEX if not exists idx_incident_tracker_created_on ON incident_tracker(created_on);
+
+
+CREATE TABLE IF NOT exists audit_trail (
+id TEXT PRIMARY KEY,
+user_action TEXT NOT NULL,
+description TEXT,
+email TEXT NOT NULL,
+created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+created_by TEXT NOT NULL,
+updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+updated_by TEXT NOT NULL,
+is_deleted BOOLEAN DEFAULT FALSE
+);

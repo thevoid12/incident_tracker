@@ -35,20 +35,17 @@ class IncidentDataAccess:
                 updated_by=created_by
             )
 
-            # Add to database
+            # Add to database session
             self.db.add(incident)
-            await self.db.commit()
-            # telling SQLAlchemy to reload the object from the database,
-            # populating all the database-generated fields with their
-            # actual values.
-            await self.db.refresh(incident)
+            # Note: Transaction commit and refresh moved to service layer
+            # This prevents "not persistent" errors when refresh is called before commit
 
-            LOGGER.info(f"Incident created successfully with ID: {incident.id}")
+            LOGGER.info(f"Incident added to session with title: {title}")
             return incident
 
         except Exception as e:
             LOGGER.error(f"Failed to create incident {title}: {str(e)}")
-            await self.db.rollback()
+            # Note: Transaction rollback handled by service layer
             raise DatabaseError(f"Failed to create incident: {str(e)}", operation="create_incident")
 
     async def get_incident_by_id(self, incident_id: str, emailID: str) -> Incident | None:
@@ -140,7 +137,7 @@ class IncidentDataAccess:
                 LOGGER.warning(f"No incident found with ID: {incident_id} for user: {emailID}")
                 raise DatabaseError("Incident not found or access denied", operation="update_incident")
 
-            await self.db.commit()
+            # Note: Transaction management moved to service layer
             await self.db.refresh(updated_incident)
 
             LOGGER.info(f"Incident updated successfully: {incident_id}")
@@ -151,7 +148,7 @@ class IncidentDataAccess:
             raise DatabaseError(f"Invalid incident ID format: {incident_id}", operation="update_incident")
         except Exception as e:
             LOGGER.error(f"Failed to update incident {incident_id}: {str(e)}")
-            await self.db.rollback()
+            # Note: Transaction rollback handled by service layer
             if isinstance(e, DatabaseError):
                 raise
             raise DatabaseError(f"Failed to update incident: {str(e)}", operation="update_incident")
@@ -178,7 +175,7 @@ class IncidentDataAccess:
                 LOGGER.warning(f"No incident found with ID: {incident_id} for user: {created_by}")
                 return False
 
-            await self.db.commit()
+            # Note: Transaction management moved to service layer
             LOGGER.info(f"Incident soft deleted successfully: {incident_id}")
             return True
 
@@ -187,7 +184,7 @@ class IncidentDataAccess:
             raise DatabaseError(f"Invalid incident ID format: {incident_id}", operation="soft_delete_incident")
         except Exception as e:
             LOGGER.error(f"Failed to soft delete incident {incident_id}: {str(e)}")
-            await self.db.rollback()
+            # Note: Transaction rollback handled by service layer
             raise DatabaseError(f"Failed to delete incident: {str(e)}", operation="soft_delete_incident")
 
     async def add_chat_message(self, incident_id: str, user_email: str, content: str, emailID: str) -> Incident:
@@ -226,15 +223,13 @@ class IncidentDataAccess:
             incident.chat.append(new_message)
 
             # Mark the chat field as modified for SQLAlchemy
-           
             # SQLAlchemy Issue: When you modify nested data in a JSON field, SQLAlchemy doesn't automatically detect the change
             # Without flag_modified: The commit happens but the JSON field isn't updated in the database
             # With flag_modified: SQLAlchemy knows the field changed and properly saves it
             flag_modified(incident, 'chat')
 
-            # Update the incident
-            await self.db.commit()
-            await self.db.refresh(incident)
+            # Note: Transaction management moved to service layer
+            # Refresh will be handled by service layer after commit
 
             LOGGER.info(f"Chat message added to incident: {incident_id}")
             return incident
@@ -244,5 +239,5 @@ class IncidentDataAccess:
             raise DatabaseError(f"Invalid incident ID format: {incident_id}", operation="add_chat_message")
         except Exception as e:
             LOGGER.error(f"Failed to add chat message to incident {incident_id}: {str(e)}")
-            await self.db.rollback()
+            # Note: Transaction rollback handled by service layer
             raise DatabaseError(f"Failed to add chat message: {str(e)}", operation="add_chat_message")
