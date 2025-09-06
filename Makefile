@@ -1,4 +1,4 @@
-.PHONY: build dev frontend backend clean
+.PHONY: build dev frontend backend clean db-migrate
 
 # Build React app and start backend
 build-dev:
@@ -33,4 +33,11 @@ backend:
 setup:
 	cd ./frontend && npm install
 	cd ./backend && uv sync
+
+# Run database migration
+db-migrate:
+	@echo "Running database migration..."
+	docker cp backend/app/service/db/migration/v1_0_0--v1_0_1.sql inctra_pgsql:/tmp/migration.sql
+	docker exec inctra_pgsql psql -U postgres -d postgres -f /tmp/migration.sql
+	@echo "Migration completed successfully!"
 

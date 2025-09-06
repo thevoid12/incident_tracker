@@ -17,7 +17,7 @@ class IncidentDataAccess:
         self.db = db
 
     async def create_incident(self, title: str, description: str, status: str, priority: str,
-                            created_by: str) -> Incident:
+                             assigned_to: str, created_by: str) -> Incident:
         """Create a new incident in the database"""
         try:
             LOGGER.debug(f"Creating incident with title: {title}")
@@ -29,6 +29,7 @@ class IncidentDataAccess:
                 description=description,
                 status=status,
                 priority=priority,
+                assigned_to=assigned_to,
                 created_by=created_by,
                 updated_by=created_by
             )

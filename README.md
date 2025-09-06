@@ -256,7 +256,7 @@ IncidentContext (Global State)
 ├── createIncident() - Create new incident
 ├── updateIncident() - Modify existing incident
 ├── deleteIncident() - Remove incident
-└── pagination - Page state management
+└── pagination - Page state management 
 
 Individual Components
 ├── Controlled by Context

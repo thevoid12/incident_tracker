@@ -67,3 +67,10 @@
 - [x] Containerize with Docker (frontend, backend, DB).
 - [x] Write a short README with setup instructions.
 
+---
+
+## Additional features:
+- [ ] Excel or CSV upload of incidents
+- [ ] Enhance logging to change the log level during run time without service restart
+- [ ] Allow options for users to add comments on incidents and accept responses for the comments
+- [ ] Capture audit for user actions

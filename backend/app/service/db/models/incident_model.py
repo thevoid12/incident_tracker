@@ -18,6 +18,7 @@ class Incident(Base):
     description = Column(Text, nullable=True)
     status = Column(String(50), default="Open", nullable=False)
     priority = Column(String(50), default="Medium", nullable=False)
+    assigned_to = Column(String, nullable=False)
     created_on = Column(TIMESTAMP, nullable=False, server_default='CURRENT_TIMESTAMP')
     created_by = Column(String, nullable=False)
     updated_on = Column(TIMESTAMP, nullable=False, server_default='CURRENT_TIMESTAMP')
@@ -26,4 +27,4 @@ class Incident(Base):
 
     # when I print/debug the object, I dont want memory location rather this info
     def __repr__(self):
-        return f"<Incident(id='{self.id}', title='{self.title}', status='{self.status}', priority='{self.priority}')>"
+        return f"<Incident(id='{self.id}', title='{self.title}', status='{self.status}', priority='{self.priority}', assigned_to='{self.assigned_to}')>"

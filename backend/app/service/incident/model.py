@@ -30,6 +30,7 @@ class CreateIncidentRequest(BaseModel):
     description: Optional[str] = None
     status: IncidentStatus = IncidentStatus.OPEN
     priority: IncidentPriority = IncidentPriority.MEDIUM
+    assigned_to: str = Field(..., min_length=1)  # Required field for assignment
 
     @field_validator("title")
     def title_not_blank(cls, v: str) -> str:
@@ -43,14 +44,16 @@ class CreateIncidentRequest(BaseModel):
         title: str = Form(..., min_length=1, max_length=200),
         description: str = Form(None),
         status: IncidentStatus = Form(IncidentStatus.OPEN),
-        priority: IncidentPriority = Form(IncidentPriority.MEDIUM)
+        priority: IncidentPriority = Form(IncidentPriority.MEDIUM),
+        assigned_to: str = Form(..., min_length=1)
     ):
         """Create CreateIncidentRequest from form data"""
         return cls(
             title=title,
             description=description,
             status=status,
-            priority=priority
+            priority=priority,
+            assigned_to=assigned_to
         )
 
 
@@ -60,6 +63,7 @@ class UpdateIncidentRequest(BaseModel):
     description: Optional[str] = None
     status: Optional[IncidentStatus] = None
     priority: Optional[IncidentPriority] = None
+    assigned_to: Optional[str] = Field(None, min_length=1)
 
     @field_validator("title")
     def title_not_blank(cls, v: Optional[str]) -> Optional[str]:
@@ -73,14 +77,16 @@ class UpdateIncidentRequest(BaseModel):
         title: str = Form(None),
         description: str = Form(None),
         status: IncidentStatus = Form(None),
-        priority: IncidentPriority = Form(None)
+        priority: IncidentPriority = Form(None),
+        assigned_to: str = Form(None)
     ):
         """Create UpdateIncidentRequest from form data"""
         return cls(
             title=title if title else None,
             description=description if description else None,
             status=status,
-            priority=priority
+            priority=priority,
+            assigned_to=assigned_to if assigned_to else None
         )
 
 
@@ -91,6 +97,7 @@ class IncidentResponse(BaseModel):
     description: Optional[str]
     status: IncidentStatus
     priority: IncidentPriority
+    assigned_to: str
     created_on: datetime
     created_by: str
     updated_on: datetime

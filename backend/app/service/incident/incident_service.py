@@ -30,6 +30,7 @@ class IncidentService:
                 description=request.description,
                 status=request.status.value,
                 priority=request.priority.value,
+                assigned_to=request.assigned_to,
                 created_by=reported_by
             )
 
@@ -42,6 +43,7 @@ class IncidentService:
                 description=incident.description,
                 status=incident.status,
                 priority=incident.priority,
+                assigned_to=incident.assigned_to,
                 created_on=incident.created_on,
                 created_by=incident.created_by,
                 updated_on=incident.updated_on,
@@ -73,6 +75,7 @@ class IncidentService:
                 description=incident.description,
                 status=incident.status,
                 priority=incident.priority,
+                assigned_to=incident.assigned_to,
                 created_on=incident.created_on,
                 created_by=incident.created_by,
                 updated_on=incident.updated_on,
@@ -105,6 +108,7 @@ class IncidentService:
                     description=incident.description,
                     status=incident.status,
                     priority=incident.priority,
+                    assigned_to=incident.assigned_to,
                     created_on=incident.created_on,
                     created_by=incident.created_by,
                     updated_on=incident.updated_on,
@@ -154,6 +158,8 @@ class IncidentService:
                 update_data['status'] = request.status.value
             if request.priority is not None:
                 update_data['priority'] = request.priority.value
+            if request.assigned_to is not None:
+                update_data['assigned_to'] = request.assigned_to
 
             if not update_data:
                 LOGGER.warning("No fields to update for incident")
@@ -175,6 +181,7 @@ class IncidentService:
                 description=updated_incident.description,
                 status=updated_incident.status,
                 priority=updated_incident.priority,
+                assigned_to=updated_incident.assigned_to,
                 created_on=updated_incident.created_on,
                 created_by=updated_incident.created_by,
                 updated_on=updated_incident.updated_on,

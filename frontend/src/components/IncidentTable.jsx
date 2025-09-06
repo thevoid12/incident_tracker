@@ -133,8 +133,8 @@ const IncidentTable = () => {
                 Created Date
               </th>
                <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-24">
-                Created By
-              </th>
+                 Assigned To
+               </th>
               <th className="px-4 py-3 text-left text-[#111418] text-sm font-medium leading-normal w-24">
                 Actions
               </th>
@@ -167,7 +167,7 @@ const IncidentTable = () => {
                     {formatDate(incident.created_on)}
                   </td>
                   <td className="h-[72px] px-4 py-2 text-[#617589] text-sm font-normal leading-normal">
-                    {incident.created_by}
+                    {incident.assigned_to}
                   </td>
                   <td className="h-[72px] px-4 py-2 text-sm font-normal leading-normal">
                     <div className="flex gap-2">
@@ -233,7 +233,7 @@ const IncidentTable = () => {
                 <span className="font-medium text-[#111418]">Created:</span> {formatDate(incident.created_on)}
               </p>
               <p className="text-[#617589] text-sm">
-                <span className="font-medium text-[#111418]">Assigned to:</span> {incident.created_by}
+                <span className="font-medium text-[#111418]">Assigned to:</span> {incident.assigned_to}
               </p>
             </div>
 
