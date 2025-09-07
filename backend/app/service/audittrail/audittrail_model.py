@@ -52,7 +52,7 @@ class AuditTrailFilterRequest(BaseModel):
     email: Optional[EmailStr] = None
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
-    limit: int = Field(10, ge=1, le=100)
+    limit: int = Field(10, ge=1, le=100)  # TODO: Use config value
     offset: int = Field(0, ge=0)
 
     @field_validator("end_date")

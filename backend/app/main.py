@@ -7,20 +7,20 @@ import os
 
 from api.api_handler import api_router
 from api.middleware.auth_middleware import auth_middleware
-from core import setup_logging, LOGGER, AppException
+from core import setup_logging, LOGGER, AppException, config
 
 # Setup logging
-setup_logging()
+setup_logging(config.LOGGING.LEVEL, config.LOGGING.MAX_BYTES, config.LOGGING.BACKUP_COUNT)
 
-app = FastAPI(title="Incident Tracker", version="1.0.0")
+app = FastAPI(title=config.APP.TITLE, version=config.APP.VERSION)
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000"],  # React dev server
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=config.CORS.ALLOW_ORIGINS,
+    allow_credentials=config.CORS.ALLOW_CREDENTIALS,
+    allow_methods=config.CORS.ALLOW_METHODS,
+    allow_headers=config.CORS.ALLOW_HEADERS,
 )
 
 # Add authentication middleware
