@@ -41,3 +41,8 @@ db-migrate:
 	docker exec inctra_pgsql psql -U postgres -d postgres -f /tmp/migration.sql
 	@echo "Migration completed successfully!"
 
+test-all:
+	cd ./backend && uv run python -m pytest -v
+
+test-rbac:
+	cd ./backend && uv run python -m pytest app/service/rbac/ -v
