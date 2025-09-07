@@ -10,6 +10,7 @@ from service.incident.model import (
 )
 from service.db import get_db
 from service.auth.auth import get_current_user
+from core.settings import config
 
 router = APIRouter(tags=["incidents"])
 
@@ -31,7 +32,7 @@ async def create_incident(
 
 @router.get("/incidents", response_model=IncidentListResponse)
 async def list_incidents(
-    limit: int = Query(10, ge=1, le=10000),
+    limit: int = Query(config.PAGINATION.INCIDENT_DEFAULT_LIMIT, ge=1, le=config.PAGINATION.MAX_LIMIT),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)

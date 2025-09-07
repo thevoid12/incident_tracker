@@ -9,6 +9,7 @@ from fastapi import Form
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
+from core.settings import config
 
 
 class IncidentStatus(str, Enum):
@@ -120,7 +121,7 @@ class IncidentFilterRequest(BaseModel):
     status: Optional[IncidentStatus] = None
     priority: Optional[IncidentPriority] = None
     search: Optional[str] = None  # Search in title and description
-    limit: int = Field(5, ge=1, le=100)
+    limit: int = Field(config.PAGINATION.INCIDENT_DEFAULT_LIMIT, ge=1, le=config.PAGINATION.MAX_LIMIT)
     offset: int = Field(0, ge=0)
 
 

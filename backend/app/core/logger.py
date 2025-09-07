@@ -55,7 +55,7 @@ class CustomRotatingFileHandler(RotatingFileHandler):
 LOGGER_NAME = config.LOGGING.LOGGER_NAME
 LOGGER = logging.getLogger(LOGGER_NAME)
 
-def setup_logging(log_level: str = "DEBUG", max_bytes: int = 10 * 1024 * 1024, backup_count: int = 5) -> None:
+def setup_logging(log_level: str = "DEBUG", max_bytes: int = config.LOGGING.MAX_BYTES, backup_count: int = config.LOGGING.BACKUP_COUNT) -> None:
     """
     Setup logging configuration for the entire application.
 

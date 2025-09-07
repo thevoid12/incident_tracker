@@ -6,12 +6,13 @@ from service.audittrail.audittrail_service import AuditTrailService
 from service.audittrail.audittrail_model import AuditTrailListResponse
 from service.db import get_db
 from service.auth.auth import get_current_user
+from core.settings import config
 
 router = APIRouter(tags=["audittrail"])
 
 @router.get("/audittrail", response_model=AuditTrailListResponse)
 async def list_audit_entries(
-    limit: int = Query(10, ge=1, le=100),
+    limit: int = Query(config.PAGINATION.AUDIT_TRAIL_DEFAULT_LIMIT, ge=1, le=config.PAGINATION.MAX_LIMIT),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)

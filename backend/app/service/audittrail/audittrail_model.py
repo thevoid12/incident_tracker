@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, field_validator, EmailStr
 from typing import Optional, List
 from datetime import datetime
 from .action_const import UserAction
+from core.settings import config
 
 
 class AuditTrailEntry(BaseModel):
@@ -52,7 +53,7 @@ class AuditTrailFilterRequest(BaseModel):
     email: Optional[EmailStr] = None
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
-    limit: int = Field(10, ge=1, le=100)  # TODO: Use config value
+    limit: int = Field(config.PAGINATION.AUDIT_TRAIL_DEFAULT_LIMIT, ge=1, le=config.PAGINATION.MAX_LIMIT)
     offset: int = Field(0, ge=0)
 
     @field_validator("end_date")

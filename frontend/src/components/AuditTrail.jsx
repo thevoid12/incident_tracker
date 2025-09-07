@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import Pagination from './Pagination';
+import { PAGINATION } from '../constants';
 
 const AuditTrail = () => {
   const [auditEntries, setAuditEntries] = useState([]);
@@ -10,7 +11,7 @@ const AuditTrail = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const pageSize = 10;
+  const pageSize = PAGINATION.AUDIT_TRAIL_DEFAULT_LIMIT;
 
   const fetchAuditEntries = async (page = 1) => {
     try {

@@ -12,6 +12,7 @@ import tempfile
 import shutil
 import logging as python_logging
 from pathlib import Path
+from core import config
 
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -22,7 +23,6 @@ from app.core.logger import (
     setup_logging, LOGGER, reload_logging_config,
     start_config_watcher, stop_config_watcher, get_logger
 )
-from app.core.settings import config
 
 
 class LoggerTestSuite:

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { PAGINATION } from '../constants';
 
 const IncidentContext = createContext();
 
@@ -18,7 +19,7 @@ export const IncidentProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
-    pageSize: 5,
+    pageSize: PAGINATION.INCIDENT_DEFAULT_LIMIT,
     totalCount: 0,
     totalPages: 0
   });
@@ -33,7 +34,7 @@ export const IncidentProvider = ({ children }) => {
     setError(null);
     try {
       // Fetch all incidents without pagination for client-side filtering
-      const response = await fetch('/api/incidents?limit=100', { // Maximum allowed by backend
+      const response = await fetch(`/api/incidents?limit=${PAGINATION.MAX_LIMIT}`, { // Maximum allowed by backend
         method: 'GET',
         credentials: 'include',
         headers: {

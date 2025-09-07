@@ -9,8 +9,9 @@ from core import LOGGER, ValidationError, NotFoundError, DatabaseError
 from .data.data import AuditTrailDataAccess
 from .audittrail_model import (
     CreateAuditTrailRequest, AuditTrailEntry,
-    AuditTrailListResponse 
+    AuditTrailListResponse
 )
+from core.settings import config
 
 
 class AuditTrailService:
@@ -54,7 +55,7 @@ class AuditTrailService:
                 raise
             raise DatabaseError(f"Audit entry creation failed: {str(e)}", operation="create_audit_entry")
 
-    async def list_audit_entries(self, created_by: str, limit: int = 10, offset: int = 0) -> AuditTrailListResponse:
+    async def list_audit_entries(self, created_by: str, limit: int = config.PAGINATION.AUDIT_TRAIL_DEFAULT_LIMIT, offset: int = 0) -> AuditTrailListResponse:
         """List audit entries with pagination"""
         LOGGER.info(f"Processing audit entries list request with pagination: limit={limit}, offset={offset}")
 

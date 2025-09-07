@@ -13,6 +13,7 @@ from .model import (
 )
 from service.audittrail import AuditTrailService, UserAction
 from service.audittrail.audittrail_model import CreateAuditTrailRequest
+from core.settings import config
 
 
 class IncidentService:
@@ -111,7 +112,7 @@ class IncidentService:
                 raise
             raise DatabaseError(f"Incident retrieval failed: {str(e)}", operation="get_incident")
 
-    async def list_incidents(self, created_by: str, limit: int = 10, offset: int = 0) -> IncidentListResponse:
+    async def list_incidents(self, created_by: str, limit: int = config.PAGINATION.INCIDENT_DEFAULT_LIMIT, offset: int = 0) -> IncidentListResponse:
         """List incidents with pagination filtered by created_by"""
         LOGGER.info(f"Processing incident list request with pagination: limit={limit}, offset={offset} for user: {created_by}")
 
