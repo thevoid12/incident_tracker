@@ -14,19 +14,22 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
     confirm_password: str
+    role_name: str
 
     @classmethod
     def as_form(
         cls,
         email: EmailStr = Form(...),
         password: str = Form(...),
-        confirm_password: str = Form(...)
+        confirm_password: str = Form(...),
+        role_name: str = Form(...)
     ):
         """Create RegisterRequest from form data"""
         return cls(
             email=email,
             password=password,
-            confirm_password=confirm_password
+            confirm_password=confirm_password,
+            role_name=role_name
         )
 
 

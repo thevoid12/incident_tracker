@@ -3,6 +3,7 @@ Authentication service for JWT token management and password hashing.
 """
 
 import os
+import base64
 import bcrypt
 import jwt
 from datetime import datetime, timezone,timedelta
@@ -44,15 +45,15 @@ class AuthService:
             LOGGER.error(f"Failed to verify password: {str(e)}")
             return False
 
-    def generate_jwt(self, user_id: str, email: str) -> str:
+    def generate_jwt(self, user_id: str, email: str, role: bytes = None) -> str:
         """Generate a JWT token for the user"""
         try:
             payload = {
                 # "user_id": user_id,
                 "email": email,
                 "exp": datetime.now(timezone.utc) + timedelta(seconds=self.cookie_age),
-                "iat":  datetime.now(timezone.utc) # issued at
-                # TODO: we need to store rback role byte array also in here.
+                "iat":  datetime.now(timezone.utc), # issued at
+                "role": base64.b64encode(role).decode('utf-8') if role else None
             }
             token = jwt.encode(payload, self.jwt_secret, algorithm="HS256")
             return token
@@ -118,6 +119,9 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
 
     try:
         payload = auth_service.verify_jwt(token)
+        # Decode role from base64 to bytes if present
+        if payload.get('role'):
+            payload['role'] = base64.b64decode(payload['role'])
         LOGGER.debug(f"User authenticated: {payload.get('email')}")
         return payload
     except ValueError as e:

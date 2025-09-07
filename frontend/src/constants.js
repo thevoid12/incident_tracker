@@ -19,3 +19,6 @@ export const UPLOAD_CONFIG = {
   ],
   ALLOWED_EXTENSIONS: ['.csv', '.xlsx', '.xls']
 };
+
+// User roles for registration
+export const USER_ROLES = ['Admin', 'User'];

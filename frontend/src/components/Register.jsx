@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import Footer from './Footer';
+import { USER_ROLES } from '../constants';
+
 function Register() {
-  // Form will submit directly to /reg endpoint
+  const roles = USER_ROLES;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -58,6 +60,21 @@ function Register() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
+              </div>
+
+              <div className="mb-6">
+                <label htmlFor="role_name" className="sr-only">Role</label>
+                <select
+                  id="role_name"
+                  name="role_name"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                  defaultValue="Admin"
+                >
+                  {roles.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
               </div>
 
               <button

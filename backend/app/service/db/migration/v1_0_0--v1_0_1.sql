@@ -29,3 +29,10 @@ updated_by TEXT NOT NULL,
 is_deleted BOOLEAN DEFAULT FALSE
 );
 
+-- adding a new column for chat
+ALTER TABLE users
+ADD COLUMN role_name TEXT;
+
+
+-- set default Admin role for existing users with all permissions (0x00)
+UPDATE users SET role_name = 'Admin', role = '\x00' WHERE role_name IS NULL;

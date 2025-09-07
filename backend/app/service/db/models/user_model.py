@@ -15,7 +15,8 @@ class User(BaseModel):
     id = Column(String, primary_key=True, nullable=False)
     email = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
-    role = Column(LargeBinary, nullable=True)  # BYTEA in PostgreSQL
+    role = Column(LargeBinary, nullable=True)  # BYTEA in PostgreSQL for permissions
+    role_name = Column(String, nullable=True)
 
     # when I print/debug the object, I dont want memory location rather this info
     def __repr__(self):

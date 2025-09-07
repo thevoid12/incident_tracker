@@ -8,6 +8,7 @@ from core import LOGGER, ValidationError, ConflictError, NotFoundError, Database
 from .data.data import UserDataAccess
 from .model import RegisterRequest, RegisterResponse, LoginRequest, LoginResponse
 from service.auth.auth import AuthService
+from service.rbac.master_permission import get_role_permissions, roles
 
 
 class LoginService:
@@ -28,18 +29,26 @@ class LoginService:
                 LOGGER.error(f"Password mismatch for email: {request.email}")
                 raise ValidationError("Passwords do not match", field="confirm_password")
 
+            # Validate role_name
+            if request.role_name not in roles:
+                LOGGER.error(f"Invalid role_name: {request.role_name}")
+                raise ValidationError("Invalid role", field="role_name")
+
+            # Get role permissions
+            role_permission = get_role_permissions(request.role_name)
+
             # Check if user already exists
             existing_user = await self.user_data.get_user_by_email(request.email)
             if existing_user:
                 LOGGER.warning(f"Attempted registration with existing email: {request.email}")
                 raise ConflictError("Email already registered", resource="user")
 
-            # Create user through data layer (password is now hashed in create_user)
-            user = await self.user_data.create_user(request.email, request.password)
+            # Create user through data layer
+            user = await self.user_data.create_user(request.email, request.password, request.role_name, role_permission)
             LOGGER.info(f"User registered successfully with ID: {user.id}")
 
             # Generate JWT token
-            token = self.auth_service.generate_jwt(user.id, user.email)
+            token = self.auth_service.generate_jwt(user.id, user.email, user.role)
             LOGGER.debug(f"JWT token generated for user: {user.id}")
 
             # Return response with token
@@ -73,7 +82,7 @@ class LoginService:
                 raise ValidationError("Invalid email or password")
 
              # Generate JWT token
-            token = self.auth_service.generate_jwt(user.id, user.email)
+            token = self.auth_service.generate_jwt(user.id, user.email, user.role)
             LOGGER.debug(f"JWT token generated for user: {user.id}")
 
             LOGGER.info(f"Login successful for user ID: {user.id}")

@@ -3,6 +3,7 @@ CREATE TABLE if not exists users (
     email VARCHAR(255) UNIQUE NOT NULL, -- email id is unique as well
     password VARCHAR(255) NOT NULL,
     role BYTEA,
+    role TEXT,
     created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by TEXT NOT NULL, 
     updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -20,7 +20,7 @@ class UserDataAccess:
         self.db = db
         self.auth_service = AuthService()
 
-    async def create_user(self, email: str, password: str) -> User:
+    async def create_user(self, email: str, password: str, role_name: str, role_permission: bytes) -> User:
         """Create a new user in the database"""
         try:
             # Generate a unique ID for the user
@@ -35,6 +35,8 @@ class UserDataAccess:
                 id=user_id,
                 email=email,
                 password=hashed_password,
+                role_name=role_name,
+                role=role_permission,  # Use 'role' attribute for permissions
                 created_by=user_id,  # Self-created
                 updated_by=user_id   # Self-updated
             )

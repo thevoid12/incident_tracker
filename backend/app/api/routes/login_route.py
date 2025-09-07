@@ -7,6 +7,7 @@ from service.login.login_service import LoginService
 from service.login.model import RegisterRequest, LoginRequest
 from service.db import get_db
 from service.auth.auth import AuthService
+from service.rbac.master_permission import roles
 
 router = APIRouter(tags=["login-register"])
 
@@ -63,5 +64,4 @@ async def logout_user():
 
     # Clear the authentication cookie
     auth_service.clear_auth_cookie(response)
-
     return response
