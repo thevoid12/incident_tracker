@@ -126,7 +126,7 @@ const IncidentTable = () => {
   return (
     <div className="px-4 py-3">
       {/* Desktop Table View */}
-      <div className="hidden lg:flex rounded-lg border border-[#dbe0e6] bg-white overflow-hidden">
+      <div className="hidden lg:flex rounded-lg border border-[#dbe0e6] bg-white overflow-visible">
         <table className="flex-1">
           <thead>
             <tr className="bg-white">
@@ -192,7 +192,7 @@ const IncidentTable = () => {
                   </td>
                   <td className="h-[72px] px-2 py-2 text-sm font-normal leading-normal">
                     <ActionMenu
-                      triggerClassName="flex items-center justify-center w-6 h-6 rounded bg-[#f0f2f4] hover:bg-[#e5e7eb] transition-colors"
+                      triggerClassName="flex items-center justify-center w-8 h-8 rounded bg-[#f0f2f4] hover:bg-[#e5e7eb] transition-colors ml-2"
                       actions={[
                         {
                           label: 'View Details',

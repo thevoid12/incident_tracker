@@ -446,11 +446,14 @@ class IncidentService:
                         errors.append(f"Row {index + 2}: Title cannot be empty")
                         continue
 
-                    description = str(row.get(description_col, '')) if description_col and pd.notna(row.get(description_col)) else None
+                    description = None
                     status_raw = str(row.get(status_col, '')).strip()
                     priority_raw = str(row.get(priority_col, '')).strip()
                     assigned_to = str(row.get(assigned_to_col, '')).strip()
-
+                    if description_col:
+                        value = row.get(description_col, None)
+                        if pd.notna(value):
+                            description = str(value)
                     if not status_raw:
                         errors.append(f"Row {index + 2}: Status cannot be empty")
                         continue
