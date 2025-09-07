@@ -70,50 +70,98 @@ const IncidentDetails = ({ incident: initialIncident, onClose }) => {
           <div className="flex flex-wrap gap-2 p-4">
             <a className="text-[#617589] text-base font-medium leading-normal" href="#">Incidents</a>
             <span className="text-[#617589] text-base font-medium leading-normal">/</span>
-            <span className="text-[#111418] text-base font-medium leading-normal">ID:{incident.id}</span>
+            <span className="text-[#111418] text-base font-medium leading-normal truncate max-w-xs" title={incident.title}>{incident.title}</span>
           </div>
 
           <div className="flex flex-wrap justify-between gap-3 p-4">
             <div className="flex flex-col gap-3">
-              <p className="text-[#111418] tracking-light text-xl md:text-3xl lg:text-[32px] font-bold leading-tight">{incident.id}</p>
+              <h1 className="text-[#111418] tracking-light text-xl md:text-3xl lg:text-[32px] font-bold leading-tight">{incident.title}</h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  incident.status === 'OPEN' ? 'bg-blue-100 text-blue-800' :
+                  incident.status === 'IN_PROGRESS' ? 'bg-orange-100 text-orange-800' :
+                  'bg-green-100 text-green-800'
+                }`}>
+                  {incident.status.replace('_', ' ')}
+                </span>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  incident.priority === 'HIGH' ? 'bg-red-100 text-red-800' :
+                  incident.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-green-100 text-green-800'
+                }`}>
+                  {incident.priority}
+                </span>
+              </div>
               <p className="text-[#617589] text-sm font-normal leading-normal">
-                Reported by {incident.created_by} on {formatDate(incident.created_on)}
+                ID: {incident.id} • Assigned to: {incident.assigned_to} • Reported by {incident.created_by} on {formatDate(incident.created_on)}
               </p>
             </div>
           </div>
 
           <h3 className="text-[#111418] text-base md:text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Details</h3>
-          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pr-2">
               <p className="text-[#617589] text-sm font-normal leading-normal">Status</p>
-              <p className="text-[#111418] text-sm font-normal leading-normal">{incident.status}</p>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                incident.status === 'OPEN' ? 'bg-blue-100 text-blue-800' :
+                incident.status === 'IN_PROGRESS' ? 'bg-orange-100 text-orange-800' :
+                'bg-green-100 text-green-800'
+              }`}>
+                {incident.status.replace('_', ' ')}
+              </span>
             </div>
             <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pl-2">
               <p className="text-[#617589] text-sm font-normal leading-normal">Priority</p>
-              <p className="text-[#111418] text-sm font-normal leading-normal">{incident.priority}</p>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                incident.priority === 'HIGH' ? 'bg-red-100 text-red-800' :
+                incident.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-green-100 text-green-800'
+              }`}>
+                {incident.priority}
+              </span>
             </div>
             <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pr-2">
+              <p className="text-[#617589] text-sm font-normal leading-normal">Assigned To</p>
+              <p className="text-[#111418] text-sm font-normal leading-normal">{incident.assigned_to}</p>
+            </div>
+            <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pl-2">
               <p className="text-[#617589] text-sm font-normal leading-normal">Created By</p>
               <p className="text-[#111418] text-sm font-normal leading-normal">{incident.created_by}</p>
             </div>
-            <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pl-2">
+            <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pr-2">
               <p className="text-[#617589] text-sm font-normal leading-normal">Created Date</p>
               <p className="text-[#111418] text-sm font-normal leading-normal">{formatDate(incident.created_on)}</p>
             </div>
-            <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pr-2">
+            <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pl-2">
               <p className="text-[#617589] text-sm font-normal leading-normal">Updated By</p>
               <p className="text-[#111418] text-sm font-normal leading-normal">{incident.updated_by}</p>
             </div>
-            <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pl-2">
+            <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pr-2">
               <p className="text-[#617589] text-sm font-normal leading-normal">Updated Date</p>
               <p className="text-[#111418] text-sm font-normal leading-normal">{formatDate(incident.updated_on)}</p>
+            </div>
+            <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pl-2">
+              <p className="text-[#617589] text-sm font-normal leading-normal">Incident ID</p>
+              <p className="text-[#111418] text-sm font-normal leading-normal">{incident.id}</p>
+            </div>
+            <div className="flex flex-col gap-1 border-t border-solid border-t-[#dbe0e6] py-4 pr-2">
+              <p className="text-[#617589] text-sm font-normal leading-normal">Status</p>
+              <p className="text-[#111418] text-sm font-normal leading-normal">{incident.is_deleted ? 'Deleted' : 'Active'}</p>
             </div>
           </div>
 
           <h3 className="text-[#111418] text-base md:text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Description</h3>
-          <p className="text-[#111418] text-base font-normal leading-normal pb-3 pt-1 px-4">
-            {incident.description || 'No description provided.'}
-          </p>
+          <div className="px-4 pb-3 pt-1">
+            {incident.description ? (
+              <p className="text-[#111418] text-base font-normal leading-relaxed whitespace-pre-wrap">
+                {incident.description}
+              </p>
+            ) : (
+              <p className="text-[#9ca3af] text-base font-normal leading-relaxed italic">
+                No description provided.
+              </p>
+            )}
+          </div>
 
           {/* Chat Section */}
           <div className="px-4 pb-4">
