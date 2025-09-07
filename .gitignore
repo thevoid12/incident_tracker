@@ -86,3 +86,5 @@ dmypy.json
 
 deploy/.env.dev
 deploy/.env.prod
+
+large_test_incidents.csv

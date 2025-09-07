@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.responses import RedirectResponse
 
@@ -6,13 +6,50 @@ from fastapi.responses import RedirectResponse
 from service.incident.incident_service import IncidentService
 from service.incident.model import (
     CreateIncidentRequest, UpdateIncidentRequest, IncidentResponse,
-    IncidentListResponse, AddChatMessageRequest
+    IncidentListResponse, AddChatMessageRequest, IncidentConfigResponse,
+    IncidentUploadResponse
 )
 from service.db import get_db
 from service.auth.auth import get_current_user
 from core.settings import config
 
 router = APIRouter(tags=["incidents"])
+
+@router.get("/incidents/config", response_model=IncidentConfigResponse)
+async def get_incident_config():
+    """Get incident configuration for CSV upload/download"""
+    return IncidentConfigResponse(
+        fields=config.INCIDENT.FIELDS,
+        status_options=config.INCIDENT.STATUS_OPTIONS,
+        priority_options=config.INCIDENT.PRIORITY_OPTIONS,
+        upload_max_size_mb=config.INCIDENT.UPLOAD_MAX_SIZE_MB
+    )
+
+@router.post("/incidents/upload", response_model=IncidentUploadResponse)
+async def upload_incidents(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload incidents from CSV/Excel file"""
+    service = IncidentService(db)
+    try:
+        # Read file content
+        file_content = await file.read()
+
+        # Process the upload
+        result = await service.bulk_upload_incidents(
+            file_content=file_content,
+            filename=file.filename,
+            uploaded_by=current_user["email"]
+        )
+
+        return IncidentUploadResponse(
+            uploaded_count=result["uploaded_count"],
+            errors=result["errors"]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/incidents", response_model=IncidentResponse)
 async def create_incident(

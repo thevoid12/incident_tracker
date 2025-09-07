@@ -6,6 +6,8 @@ Contains business logic for incident operations with proper logging and error ha
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from core import LOGGER, ValidationError, NotFoundError, DatabaseError
+import pandas as pd
+import io
 from .data.data import IncidentDataAccess
 from .model import (
     CreateIncidentRequest, UpdateIncidentRequest, IncidentResponse,
@@ -337,3 +339,156 @@ class IncidentService:
             if isinstance(e, (NotFoundError, DatabaseError)):
                 raise
             raise DatabaseError(f"Chat retrieval failed: {str(e)}", operation="get_chat")
+
+    async def bulk_upload_incidents(self, file_content: bytes, filename: str, uploaded_by: str) -> dict:
+        """Bulk upload incidents from CSV/Excel file with all-or-nothing transaction"""
+        LOGGER.info(f"Processing bulk upload of incidents from file: {filename} by user: {uploaded_by}")
+
+        try:
+            # Read file content
+            if filename.endswith('.csv'):
+                df = pd.read_csv(io.BytesIO(file_content))
+            elif filename.endswith(('.xlsx', '.xls')):
+                df = pd.read_excel(io.BytesIO(file_content))
+            else:
+                raise ValidationError("Unsupported file format. Only CSV and Excel files are supported.")
+
+            # Validate file size
+            if len(file_content) > config.INCIDENT.UPLOAD_MAX_SIZE_MB * 1024 * 1024:
+                raise ValidationError(f"File size exceeds maximum limit of {config.INCIDENT.UPLOAD_MAX_SIZE_MB}MB")
+
+            # Validate columns (case-insensitive matching)
+            required_fields = set(field.lower() for field in config.INCIDENT.FIELDS)
+            file_fields = set(df.columns.str.strip().str.lower())
+
+            if not required_fields.issubset(file_fields):
+                missing_fields = required_fields - file_fields
+                raise ValidationError(f"Missing required fields: {', '.join(missing_fields)}")
+
+            # Create mapping from lowercase to original column names
+            column_mapping = {col.lower(): col for col in df.columns}
+
+            # Validate all data first (no defaults, throw errors for missing required fields)
+            valid_incidents = []
+            errors = []
+
+            for index, row in df.iterrows():
+                try:
+                    # Skip empty rows
+                    if row.isnull().all() or str(row.iloc[0]).strip() == '':
+                        continue
+
+                    # Get column references
+                    title_col = column_mapping.get('title')
+                    description_col = column_mapping.get('description')
+                    status_col = column_mapping.get('status')
+                    priority_col = column_mapping.get('priority')
+                    assigned_to_col = column_mapping.get('assigned_to')
+
+                    # Validate required fields exist
+                    if not title_col:
+                        errors.append(f"Row {index + 2}: Title column is missing")
+                        continue
+                    if not status_col:
+                        errors.append(f"Row {index + 2}: Status column is missing")
+                        continue
+                    if not priority_col:
+                        errors.append(f"Row {index + 2}: Priority column is missing")
+                        continue
+                    if not assigned_to_col:
+                        errors.append(f"Row {index + 2}: Assigned to column is missing")
+                        continue
+
+                    # Extract and validate data
+                    title = str(row.get(title_col, '')).strip()
+                    if not title:
+                        errors.append(f"Row {index + 2}: Title cannot be empty")
+                        continue
+
+                    description = str(row.get(description_col, '')) if description_col and pd.notna(row.get(description_col)) else None
+                    status_raw = str(row.get(status_col, '')).strip()
+                    priority_raw = str(row.get(priority_col, '')).strip()
+                    assigned_to = str(row.get(assigned_to_col, '')).strip()
+
+                    if not status_raw:
+                        errors.append(f"Row {index + 2}: Status cannot be empty")
+                        continue
+                    if not priority_raw:
+                        errors.append(f"Row {index + 2}: Priority cannot be empty")
+                        continue
+                    if not assigned_to:
+                        errors.append(f"Row {index + 2}: Assigned to cannot be empty")
+                        continue
+
+                    # Case-insensitive validation for status and priority
+                    status_options_lower = {opt.lower() for opt in config.INCIDENT.STATUS_OPTIONS}
+                    priority_options_lower = {opt.lower() for opt in config.INCIDENT.PRIORITY_OPTIONS}
+
+                    if status_raw.lower() not in status_options_lower:
+                        errors.append(f"Row {index + 2}: Invalid status '{status_raw}'. Must be one of: {', '.join(config.INCIDENT.STATUS_OPTIONS)}")
+                        continue
+
+                    if priority_raw.lower() not in priority_options_lower:
+                        errors.append(f"Row {index + 2}: Invalid priority '{priority_raw}'. Must be one of: {', '.join(config.INCIDENT.PRIORITY_OPTIONS)}")
+                        continue
+
+                    # Map to correct case
+                    status = next(opt for opt in config.INCIDENT.STATUS_OPTIONS if opt.lower() == status_raw.lower())
+                    priority = next(opt for opt in config.INCIDENT.PRIORITY_OPTIONS if opt.lower() == priority_raw.lower())
+
+                    # Validate using pydantic model
+                    create_request = CreateIncidentRequest(
+                        title=title,
+                        description=description,
+                        status=status,
+                        priority=priority,
+                        assigned_to=assigned_to
+                    )
+
+                    valid_incidents.append({
+                        'title': title,
+                        'description': description,
+                        'status': status,
+                        'priority': priority,
+                        'assigned_to': assigned_to
+                    })
+
+                except Exception as e:
+                    errors.append(f"Row {index + 2}: {str(e)}")
+                    continue
+
+            # If there are any errors, fail the entire upload
+            if errors:
+                raise ValidationError(f"Bulk upload failed due to validation errors:\n" + "\n".join(errors))
+
+            # All validation passed, proceed with bulk insert in a single transaction
+            async with self.db.begin():
+                try:
+                    # Bulk create all incidents
+                    created_incidents = await self.incident_data.bulk_create_incidents(valid_incidents, uploaded_by)
+
+                    # Create audit trails for all incidents
+                    for incident in created_incidents:
+                        audit_request = CreateAuditTrailRequest(
+                            user_action=UserAction.CREATE_INCIDENT,
+                            description=f"Created incident: {incident.title} (ID: {incident.id}) via bulk upload",
+                            email=uploaded_by
+                        )
+                        await self.audit_service.create_audittrail_entry(audit_request, uploaded_by)
+
+                    LOGGER.info(f"Bulk upload successful: {len(created_incidents)} incidents created")
+
+                    return {
+                        "uploaded_count": len(created_incidents),
+                        "errors": []
+                    }
+
+                except Exception as e:
+                    LOGGER.error(f"Bulk insert failed: {str(e)}")
+                    raise DatabaseError(f"Bulk insert failed: {str(e)}", operation="bulk_upload_incidents")
+
+        except Exception as e:
+            LOGGER.error(f"Bulk upload failed: {str(e)}")
+            if isinstance(e, ValidationError):
+                raise
+            raise DatabaseError(f"Bulk upload failed: {str(e)}", operation="bulk_upload_incidents")

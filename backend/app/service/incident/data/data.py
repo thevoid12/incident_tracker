@@ -241,3 +241,36 @@ class IncidentDataAccess:
             LOGGER.error(f"Failed to add chat message to incident {incident_id}: {str(e)}")
             # Note: Transaction rollback handled by service layer
             raise DatabaseError(f"Failed to add chat message: {str(e)}", operation="add_chat_message")
+
+    async def bulk_create_incidents(self, incidents_data: list[dict], created_by: str) -> list[Incident]:
+        """Bulk create multiple incidents in a single transaction"""
+        try:
+            LOGGER.debug(f"Bulk creating {len(incidents_data)} incidents for user: {created_by}")
+
+            incidents = []
+            for data in incidents_data:
+                incident = Incident(
+                    title=data['title'],
+                    description=data.get('description'),
+                    status=data['status'],
+                    priority=data['priority'],
+                    assigned_to=data['assigned_to'],
+                    created_by=created_by,
+                    updated_by=created_by
+                )
+                incidents.append(incident)
+                self.db.add(incident)
+
+            # Flush to generate IDs but don't commit yet
+            await self.db.flush()
+
+            # Refresh all incidents to get their IDs
+            for incident in incidents:
+                await self.db.refresh(incident)
+
+            LOGGER.info(f"Bulk created {len(incidents)} incidents for user: {created_by}")
+            return incidents
+
+        except Exception as e:
+            LOGGER.error(f"Failed to bulk create incidents: {str(e)}")
+            raise DatabaseError(f"Failed to bulk create incidents: {str(e)}", operation="bulk_create_incidents")

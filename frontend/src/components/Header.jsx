@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import UploadIncidentsModal from './UploadIncidentsModal';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -7,6 +8,48 @@ const Header = () => {
   const handleCreateIncident = () => {
     navigate('/new');
   };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      // Fetch incident config from backend
+      const response = await fetch('/api/incidents/config', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const config = await response.json();
+        const headers = config.fields.join(',');
+        const sampleData = [
+          'Sample Incident Title',
+          'This is a sample description',
+          'Open',
+          'Medium',
+          'user@example.com'
+        ].join(',');
+        const csvContent = headers + '\n' + sampleData + '\n';
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'incident_template.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        alert('Failed to download template');
+      }
+    } catch (error) {
+      console.error('Error downloading template:', error);
+      alert('Error downloading template');
+    }
+  };
+
+  const [showUploadModal, setShowUploadModal] = React.useState(false);
 
   const handleLogout = async () => {
     try {
@@ -53,8 +96,20 @@ const Header = () => {
           <Link to="/audittrail" className="text-[#111418] text-sm font-medium leading-normal hover:text-[#1172d4] transition-colors">Audit Trail</Link>
         </div>
         <button
+          onClick={handleDownloadTemplate}
+           className="text-[#111418] text-sm font-medium leading-normal hover:text-[#1172d4] transition-colors"
+        >
+          <span className="truncate">Download Template</span>
+        </button>
+        <button
+          onClick={() => setShowUploadModal(true)}
+                   className="text-[#111418] text-sm font-medium leading-normal hover:text-[#1172d4] transition-colors">
+
+          <span className="truncate">Upload Incidents</span>
+        </button>
+        <button
           onClick={handleCreateIncident}
-          className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#1172d4] text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0d5bb5] transition-colors"
+           className="text-[#111418] text-sm font-medium leading-normal hover:text-[#1172d4] transition-colors"
         >
           <span className="truncate">Create Incident</span>
         </button>
@@ -65,6 +120,15 @@ const Header = () => {
           <span className="truncate">Logout</span>
         </button>
       </div>
+
+      <UploadIncidentsModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onUpload={() => {
+          // Refresh incidents list or navigate to home
+          window.location.href = '/home';
+        }}
+      />
     </header>
   );
 };

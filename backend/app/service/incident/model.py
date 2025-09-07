@@ -11,6 +11,8 @@ from datetime import datetime
 from enum import Enum
 from core.settings import config
 
+from typing import List
+
 
 class IncidentStatus(str, Enum):
     """Enum for incident status values matching existing schema"""
@@ -128,3 +130,17 @@ class IncidentFilterRequest(BaseModel):
 class AddChatMessageRequest(BaseModel):
     """Request model for adding a chat message"""
     content: str = Field(..., min_length=1, max_length=1000)  # Message content
+
+
+class IncidentConfigResponse(BaseModel):
+    """Response model for incident configuration"""
+    fields: List[str]
+    status_options: List[str]
+    priority_options: List[str]
+    upload_max_size_mb: int
+
+
+class IncidentUploadResponse(BaseModel):
+    """Response model for incident upload"""
+    uploaded_count: int
+    errors: List[str] = Field(default_factory=list)

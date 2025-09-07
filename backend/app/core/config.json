@@ -24,6 +24,26 @@
     "AUDIT_TRAIL_DEFAULT_LIMIT": 10,
     "INCIDENT_DEFAULT_LIMIT": 5
   },
+  "INCIDENT": {
+    "FIELDS": [
+      "title",
+      "description",
+      "status",
+      "priority",
+      "assigned_to"
+    ],
+    "STATUS_OPTIONS": [
+      "Open",
+      "In Progress",
+      "Resolved"
+    ],
+    "PRIORITY_OPTIONS": [
+      "Low",
+      "Medium",
+      "High"
+    ],
+    "UPLOAD_MAX_SIZE_MB": 1
+  },
   "LOGGING": {
     "LEVEL": "DEBUG",
     "MAX_BYTES": 10485760,
