@@ -10,6 +10,7 @@ class Permission(Enum):
     PermViewAllIncident = 5
     PermCreateAuditTrail = 6
     PermViewAuditTrail = 7
+    PermViewAllAuditTrail = 8 # view audit trail that is not only the user's but all user's 
     # add as many permisions, but causion dont change the existing permision
 
 # Role to permissions mapping - list of permissions in any order
@@ -21,21 +22,3 @@ role_permissions = {
 
 # List of available roles
 roles = list(role_permissions.keys())
-
-def get_role_permissions(role: str) -> bytes:
-    """
-    Get the permission mask for a role as byte array.
-    Returns b'\x00' for all permissions if PermAll is in the list.
-    """
-    perms = role_permissions.get(role, [])
-    if Permission.PermAll in perms:
-        return b'\x00'  # All permissions
-    mask = 0
-    for perm in perms:
-        mask |= (1 << perm.value)
-    return permissions_to_bytes(mask)
-
-def permissions_to_bytes(perm: int) -> bytes:
-    if perm == 0:
-        return b'\x00'
-    return perm.to_bytes((perm.bit_length() + 7) // 8, byteorder='big')

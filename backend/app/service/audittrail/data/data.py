@@ -53,10 +53,10 @@ class AuditTrailDataAccess:
             # Note: Transaction rollback handled by service layer
             raise DatabaseError(f"Failed to create audit entry: {str(e)}", operation="create_audit_entry")
 
-    async def list_audit_entries_paginated(self, limit: int, offset: int, created_by: str) -> tuple[list[AuditTrail], int]:
-        """List audit entries with pagination"""
+    async def list_all_audit_entries_paginated(self, limit: int, offset: int, created_by: str) -> tuple[list[AuditTrail], int]:
+        """List all audit entries with pagination"""
         try:
-            LOGGER.debug(f"Querying audit entries with pagination: limit={limit}, offset={offset}")
+            LOGGER.debug(f"Querying all audit entries with pagination: limit={limit}, offset={offset}")
 
             # Build base query - exclude deleted entries
             query = select(AuditTrail).where(AuditTrail.is_deleted == False)
@@ -79,3 +79,33 @@ class AuditTrailDataAccess:
         except Exception as e:
             LOGGER.error(f"Failed to query audit entries with pagination: {str(e)}")
             raise DatabaseError(f"Failed to query audit entries: {str(e)}", operation="list_audit_entries_paginated")
+
+    async def list_user_audit_entries_paginated(self, limit: int, offset: int, created_by: str) -> tuple[list[AuditTrail], int]:
+        """List audit entries created by the user with pagination"""
+        try:
+            LOGGER.debug(f"Querying user audit entries with pagination: limit={limit}, offset={offset}, user={created_by}")
+
+            # Build base query - exclude deleted entries and filter by created_by
+            query = select(AuditTrail).where(
+                AuditTrail.is_deleted == False,
+                AuditTrail.created_by == created_by
+            )
+
+            # Get total count
+            count_query = select(func.count()).select_from(query.subquery())
+            total_count_result = await self.db.execute(count_query)
+            total_count = total_count_result.scalar()
+
+            # Apply ordering (latest first) and pagination
+            query = query.order_by(desc(AuditTrail.created_on)).offset(offset).limit(limit)
+
+            # Execute query
+            result = await self.db.execute(query)
+            entries = result.scalars().all()
+
+            LOGGER.debug(f"Found {len(entries)} user audit entries out of {total_count} total")
+            return entries, total_count
+
+        except Exception as e:
+            LOGGER.error(f"Failed to query user audit entries with pagination: {str(e)}")
+            raise DatabaseError(f"Failed to query user audit entries: {str(e)}", operation="list_user_audit_entries_paginated")

@@ -15,6 +15,7 @@ from .model import (
 )
 from service.audittrail import AuditTrailService, UserAction
 from service.audittrail.audittrail_model import CreateAuditTrailRequest
+from service.rbac import has_permission, Permission
 from core.settings import config
 
 
@@ -26,9 +27,14 @@ class IncidentService:
         self.incident_data = IncidentDataAccess(db)
         self.audit_service = AuditTrailService(db)
 
-    async def create_incident(self, request: CreateIncidentRequest, reported_by: str) -> IncidentResponse:
+    async def create_incident(self, request: CreateIncidentRequest, reported_by: str, user_permissions: bytes = None) -> IncidentResponse:
         """Create a new incident with validation and audit trail logging"""
         LOGGER.info(f"Processing incident creation for title: {request.title}")
+
+        # Check permission
+        if not has_permission(user_permissions, Permission.PermCreateIncident):
+            LOGGER.warning(f"User {reported_by} does not have permission to create incidents")
+            raise ValidationError("You do not have permission to create incidents")
 
         async with self.db.begin():  # Start transaction
             try:
@@ -81,9 +87,14 @@ class IncidentService:
                     raise
                 raise DatabaseError(f"Incident creation failed: {str(e)}", operation="create_incident")
 
-    async def get_incident(self, incident_id: str, created_by: str) -> IncidentResponse:
+    async def get_incident(self, incident_id: str, created_by: str, user_permissions: bytes = None) -> IncidentResponse:
         """Get a single incident by ID - only if created by the same user"""
         LOGGER.info(f"Processing incident retrieval for ID: {incident_id} by user: {created_by}")
+
+        # Check permission
+        if not has_permission(user_permissions, Permission.PermViewIncident):
+            LOGGER.warning(f"User {created_by} does not have permission to view incidents")
+            raise ValidationError("You do not have permission to view incidents")
 
         try:
             incident = await self.incident_data.get_incident_by_id(incident_id, created_by)
@@ -114,9 +125,14 @@ class IncidentService:
                 raise
             raise DatabaseError(f"Incident retrieval failed: {str(e)}", operation="get_incident")
 
-    async def list_incidents(self, created_by: str, limit: int = config.PAGINATION.INCIDENT_DEFAULT_LIMIT, offset: int = 0) -> IncidentListResponse:
+    async def list_incidents(self, created_by: str, limit: int = config.PAGINATION.INCIDENT_DEFAULT_LIMIT, offset: int = 0, user_permissions: bytes = None) -> IncidentListResponse:
         """List incidents with pagination filtered by created_by"""
         LOGGER.info(f"Processing incident list request with pagination: limit={limit}, offset={offset} for user: {created_by}")
+
+        # Check permission
+        if not has_permission(user_permissions, Permission.PermViewIncident):
+            LOGGER.warning(f"User {created_by} does not have permission to view incidents")
+            raise ValidationError("You do not have permission to view incidents")
 
         try:
             incidents, total_count = await self.incident_data.list_incidents_paginated(limit, offset, created_by)
@@ -158,9 +174,14 @@ class IncidentService:
                 raise
             raise DatabaseError(f"Incident list retrieval failed: {str(e)}", operation="list_incidents")
 
-    async def update_incident(self, incident_id: str, request: UpdateIncidentRequest, updated_by: str, created_by: str) -> IncidentResponse:
+    async def update_incident(self, incident_id: str, request: UpdateIncidentRequest, updated_by: str, created_by: str, user_permissions: bytes = None) -> IncidentResponse:
         """Update an existing incident - only if created by the same user"""
         LOGGER.info(f"Processing incident update for ID: {incident_id} by user: {created_by}")
+
+        # Check permission
+        if not has_permission(user_permissions, Permission.PermUpdateIncident):
+            LOGGER.warning(f"User {created_by} does not have permission to update incidents")
+            raise ValidationError("You do not have permission to update incidents")
 
         async with self.db.begin():  # Start transaction
             try:
@@ -231,9 +252,14 @@ class IncidentService:
                     raise
                 raise DatabaseError(f"Incident update failed: {str(e)}", operation="update_incident")
 
-    async def delete_incident(self, incident_id: str, deleted_by: str, created_by: str) -> bool:
+    async def delete_incident(self, incident_id: str, deleted_by: str, created_by: str, user_permissions: bytes = None) -> bool:
         """Soft delete an incident - only if created by the same user"""
         LOGGER.info(f"Processing incident deletion for ID: {incident_id} by user: {created_by}")
+
+        # Check permission
+        if not has_permission(user_permissions, Permission.PermDeleteIncident):
+            LOGGER.warning(f"User {created_by} does not have permission to delete incidents")
+            raise ValidationError("You do not have permission to delete incidents")
 
         async with self.db.begin():  # Start transaction
             try:
@@ -271,9 +297,14 @@ class IncidentService:
                     raise
                 raise DatabaseError(f"Incident deletion failed: {str(e)}", operation="delete_incident")
 
-    async def add_chat_message(self, incident_id: str, content: str, user_email: str, created_by: str) -> IncidentResponse:
+    async def add_chat_message(self, incident_id: str, content: str, user_email: str, created_by: str, user_permissions: bytes = None) -> IncidentResponse:
         """Add a message to the incident's chat"""
         LOGGER.info(f"Processing chat message addition for incident ID: {incident_id} by user: {user_email}")
+
+        # Check permission
+        if not has_permission(user_permissions, Permission.PermUpdateIncident):
+            LOGGER.warning(f"User {user_email} does not have permission to update incidents")
+            raise ValidationError("You do not have permission to update incidents")
 
         async with self.db.begin():  # Start transaction
             try:
@@ -317,9 +348,14 @@ class IncidentService:
                     raise
                 raise DatabaseError(f"Chat message addition failed: {str(e)}", operation="add_chat_message")
 
-    async def get_chat(self, incident_id: str, created_by: str) -> List[dict]:
+    async def get_chat(self, incident_id: str, created_by: str, user_permissions: bytes = None) -> List[dict]:
         """Get the chat for an incident in time series order"""
         LOGGER.info(f"Processing chat retrieval for incident ID: {incident_id} by user: {created_by}")
+
+        # Check permission
+        if not has_permission(user_permissions, Permission.PermViewIncident):
+            LOGGER.warning(f"User {created_by} does not have permission to view incidents")
+            raise ValidationError("You do not have permission to view incidents")
 
         try:
             incident = await self.incident_data.get_incident_by_id(incident_id, created_by)
@@ -340,9 +376,14 @@ class IncidentService:
                 raise
             raise DatabaseError(f"Chat retrieval failed: {str(e)}", operation="get_chat")
 
-    async def bulk_upload_incidents(self, file_content: bytes, filename: str, uploaded_by: str) -> dict:
+    async def bulk_upload_incidents(self, file_content: bytes, filename: str, uploaded_by: str, user_permissions: bytes = None) -> dict:
         """Bulk upload incidents from CSV/Excel file with all-or-nothing transaction"""
         LOGGER.info(f"Processing bulk upload of incidents from file: {filename} by user: {uploaded_by}")
+
+        # Check permission
+        if not has_permission(user_permissions, Permission.PermCreateIncident):
+            LOGGER.warning(f"User {uploaded_by} does not have permission to create incidents")
+            raise ValidationError("You do not have permission to create incidents")
 
         try:
             # Read file content

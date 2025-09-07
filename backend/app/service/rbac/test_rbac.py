@@ -1,6 +1,5 @@
 import pytest
-from .master_permission import Permission, get_role_permissions, permissions_to_bytes
-from .rbac import has_permission, bytes_to_permissions
+from . import Permission, get_role_permissions, permissions_to_bytes, has_permission, bytes_to_permissions
 
 class TestRBAC:
     def test_get_role_permissions_admin(self):

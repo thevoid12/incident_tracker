@@ -11,6 +11,7 @@ from .audittrail_model import (
     CreateAuditTrailRequest, AuditTrailEntry,
     AuditTrailListResponse
 )
+from service.rbac import has_permission, Permission
 from core.settings import config
 
 
@@ -55,13 +56,25 @@ class AuditTrailService:
                 raise
             raise DatabaseError(f"Audit entry creation failed: {str(e)}", operation="create_audit_entry")
 
-    async def list_audit_entries(self, created_by: str, limit: int = config.PAGINATION.AUDIT_TRAIL_DEFAULT_LIMIT, offset: int = 0) -> AuditTrailListResponse:
-        """List audit entries with pagination"""
+    async def list_audit_entries(self, created_by: str, limit: int = config.PAGINATION.AUDIT_TRAIL_DEFAULT_LIMIT, offset: int = 0, user_permissions: bytes = None) -> AuditTrailListResponse:
+        """List audit entries with pagination based on permissions"""
         LOGGER.info(f"Processing audit entries list request with pagination: limit={limit}, offset={offset}")
 
-        try:
-            entries, total_count = await self.audit_data.list_audit_entries_paginated(limit, offset, created_by)
+        # Check permissions and choose appropriate data method
+        if has_permission(user_permissions, Permission.PermViewAllAuditTrail):
+            # User can view all audit entries
+            entries, total_count = await self.audit_data.list_all_audit_entries_paginated(limit, offset, created_by)
+            LOGGER.debug("Listing all audit entries (PermViewAllAuditTrail)")
+        elif has_permission(user_permissions, Permission.PermViewAuditTrail):
+            # User can only view their own audit entries
+            entries, total_count = await self.audit_data.list_user_audit_entries_paginated(limit, offset, created_by)
+            LOGGER.debug("Listing user audit entries (PermViewAuditTrail)")
+        else:
+            # User has no permission to view audit entries
+            LOGGER.warning(f"User {created_by} does not have permission to view audit entries")
+            raise ValidationError("You do not have permission to view audit entries")
 
+        try:
             # Calculate total pages
             total_pages = (total_count + limit - 1) // limit
 

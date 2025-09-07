@@ -17,9 +17,9 @@ async def list_audit_entries(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """List audit trail entries with pagination"""
+    """List audit trail entries with pagination based on permissions"""
     service = AuditTrailService(db)
     try:
-        return await service.list_audit_entries(current_user["email"], limit=limit, offset=offset)
+        return await service.list_audit_entries(current_user["email"], limit=limit, offset=offset, user_permissions=current_user.get("role"))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

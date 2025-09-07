@@ -36,7 +36,13 @@ const IncidentTable = () => {
           alert('Session expired. Please log in again.');
           window.location.href = '/login';
         } else {
-          alert('Failed to delete incident');
+          // Try to get the error message from response
+          try {
+            const errorData = await response.json();
+            alert(errorData.detail || 'Failed to delete incident');
+          } catch {
+            alert('Failed to delete incident');
+          }
         }
       } catch (error) {
         console.error('Error deleting incident:', error);

@@ -41,7 +41,8 @@ async def upload_incidents(
         result = await service.bulk_upload_incidents(
             file_content=file_content,
             filename=file.filename,
-            uploaded_by=current_user["email"]
+            uploaded_by=current_user["email"],
+            user_permissions=current_user.get("role")
         )
 
         return IncidentUploadResponse(
@@ -60,7 +61,7 @@ async def create_incident(
     """Create a new incident"""
     service = IncidentService(db)
     try:
-        await service.create_incident(request, current_user["email"])
+        await service.create_incident(request, current_user["email"], current_user.get("role"))
         # Create HTML redirect response with 303 See Other
         response = RedirectResponse(url="/home", status_code=303)
         return response
@@ -77,7 +78,7 @@ async def list_incidents(
     """List incidents with pagination filtered by created_by"""
     service = IncidentService(db)
     try:
-        return await service.list_incidents(current_user["email"], limit=limit, offset=offset)
+        return await service.list_incidents(current_user["email"], limit=limit, offset=offset, user_permissions=current_user.get("role"))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -91,7 +92,7 @@ async def add_chat_message(
     """Add a chat message to an incident"""
     service = IncidentService(db)
     try:
-        return await service.add_chat_message(id, request.content, current_user["email"], current_user["email"])
+        return await service.add_chat_message(id, request.content, current_user["email"], current_user["email"], current_user.get("role"))
     except Exception as e:
         if "not found" in str(e).lower():
             raise HTTPException(status_code=404, detail=str(e))
@@ -106,7 +107,7 @@ async def get_incident(
     """Get a single incident by ID - only if created by the same user"""
     service = IncidentService(db)
     try:
-        return await service.get_incident(id, current_user["email"])
+        return await service.get_incident(id, current_user["email"], current_user.get("role"))
     except Exception as e:
         if "not found" in str(e).lower():
             raise HTTPException(status_code=404, detail=str(e))
@@ -122,7 +123,7 @@ async def update_incident(
     """Update an existing incident - only if created by the same user"""
     service = IncidentService(db)
     try:
-        await service.update_incident(id, request, current_user["email"], current_user["email"])
+        await service.update_incident(id, request, current_user["email"], current_user["email"], current_user.get("role"))
         # Create HTML redirect response with 303 See Other
         response = RedirectResponse(url="/home", status_code=303)
         return response
@@ -140,7 +141,7 @@ async def delete_incident(
     """Soft delete an incident - only if created by the same user"""
     service = IncidentService(db)
     try:
-        success = await service.delete_incident(id, current_user["email"], current_user["email"])
+        success = await service.delete_incident(id, current_user["email"], current_user["email"], current_user.get("role"))
         if success:
             return {"message": "Incident deleted successfully"}
         else:

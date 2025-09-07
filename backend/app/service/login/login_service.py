@@ -8,7 +8,7 @@ from core import LOGGER, ValidationError, ConflictError, NotFoundError, Database
 from .data.data import UserDataAccess
 from .model import RegisterRequest, RegisterResponse, LoginRequest, LoginResponse
 from service.auth.auth import AuthService
-from service.rbac.master_permission import get_role_permissions, roles
+from service.rbac import get_role_permissions, roles
 
 
 class LoginService:
